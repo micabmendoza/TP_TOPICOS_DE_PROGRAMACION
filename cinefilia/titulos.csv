@@ -1,0 +1,15 @@
+ID Pelicula;Titulo;Genero;Stock;Descripcion_Caso_Testing
+1;Matrix;Accion;10;Valido normal
+2;el padrino;Drama;5;Valido a normalizar (mayusculas)
+3;Toy Story;Comedia;0;Valido limite stock (0)
+4;El Exorcista;Terror;3;Valido normal
+5;Inception;Ciencia Ficcion;5;Invalido genero (No esta en lista)
+6;Duro de Matar;Accion;-1;Invalido stock negativo
+1;Matrix Recargado;Accion;5;Invalido ID duplicado
+10;TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT;Accion;5;Invalido Titulo > 60 chars
+11;Avatar;Ciencia Ficcion;5;Invalido Genero > 20 chars
+;Gladiador;Accion;10;Invalido Campo Nulo (ID Película)
+201;;Accion;10;Invalido Campo Nulo (Titulo)
+202;Gladiador;;10;Invalido Campo Nulo (Género)
+203;Gladiador;Accion;;Invalido Campo Nulo (Stock)
+10A;Rapido y Furioso;Accion;10;Invalido ID (Alfanumerico)

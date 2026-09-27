@@ -1,0 +1,19 @@
+# Carpetas de compilación de Code::Blocks
+bin/
+obj/
+
+# Configuraciones locales de usuario
+*.layout
+*.depend
+
+# Ejecutables y objetos compilados
+*.exe
+*.out
+*.o
+
+# Archivos generados por el sistema en tiempo de ejecución
+socios.dat
+titulos.dat
+beta_testers.dat
+matriz_consumo_*.dat
+errores_socios.txt

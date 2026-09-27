@@ -1,0 +1,52 @@
+DNI;CUIL;Apellidos y Nombres;Fecha de Nacimiento;Sexo;Fecha de afiliación;Categoría;Fecha de última cuota paga;Estado;Plan;Email Tutor;Descripcion_Caso_Testing
+30123456;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;;Valido Adulto ideal
+50123456;27-50123456-2;Gomez, Ana;20/03/2012;F;10/02/2025;MENOR;01/08/2026;A;BASIC;tutor@mail.com.ar;Valido Menor ideal
+1000000;23-01000000-9;Limite, Inferior Falso;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido DNI (1000000)
+1000001;27-01000001-2;Limite, Inferior Verdadero;01/01/1990;F;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido DNI (1000001)
+99999999;23-99999999-9;Limite, Superior Verdadero;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido DNI (99999999)
+100000000;27-100000000-3;Limite, Superior Falso;01/01/1990;F;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido DNI (100000000)
+30123457;20-30123457-2;Cuil, Erroneo;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;PREMIUM;;Invalido CUIL digito
+30123458;23-30123458-9;rodriguez pablo;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;VIP;;Valido a normalizar 1 (sin coma, todo minusc)
+30123459;27-30123459-2;MARTINEZ, LAURA;01/01/1990;F;01/01/2020;ADULTO;01/08/2026;A;FAMILY;;Valido a normalizar 2 (todo mayusc)
+30123460;20-30123460-1;Edad, Justo Diez;25/08/2016;M;25/08/2026;MENOR;25/08/2026;A;BASIC;tutor@mail.com;Valido (10 años justo)
+30123461;23-30123461-9;Edad, Nueve;26/08/2016;M;25/08/2026;MENOR;25/08/2026;A;BASIC;tutor@mail.com;Invalido (< 10 años)
+30123462;30-30123462-3;Afil, Futura;01/01/1990;O;26/08/2026;ADULTO;01/08/2026;A;BASIC;;Invalido Afiliacion > Proceso
+30123463;27-30123463-0;Afil, Previa Nac;01/01/1990;F;31/12/1989;ADULTO;01/08/2026;A;BASIC;;Invalido Afil < Nac
+30123464;20-30123464-4;Cuota, Previa Afil;01/01/1990;M;01/01/2020;ADULTO;31/12/2019;A;BASIC;;Invalido Cuota < Afil
+30123465;20-30123465-2;Sexo, Invalido;01/01/1990;X;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido Sexo (X)
+30123466;20-30123466-0;Estado, Invalido;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;X;BASIC;;Invalido Estado (X)
+30123467;20-30123467-9;Plan, Invalido;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;PLUS;;Invalido Plan (PLUS)
+50123468;27-50123468-6;Menor, Sin Email;01/01/2012;F;01/01/2020;MENOR;01/08/2026;A;BASIC;;Invalido Menor sin mail
+50123469;23-50123469-9;Email, Sin Arroba;01/01/2012;M;01/01/2020;MENOR;01/08/2026;A;BASIC;tutormail.com;Invalido Email sin @
+50123470;27-50123470-8;Email, Sin Dominio;01/01/2012;F;01/01/2020;MENOR;01/08/2026;A;BASIC;tutor@;Invalido Email sin dominio
+40123401;27-40123401-8;Gomez, AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA;01/01/1990;F;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido Nombre > 60 chars
+40123402;20-40123402-1;Perez, Luis;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;PREMIUMPLUS;;Invalido Plan > 10 chars
+40123403;27-40123403-4;Gomez, Ana;20/03/2012;F;10/02/2025;MENOR;01/08/2026;A;BASIC;este_es_un_email_muy_largo_tutor@mail.com;Invalido Email > 30 chars
+40123404;20-40123404-8;gOmez, perez, juan, carlos;01/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido a normalizar 3 (multiples comas)
+40123405;27-40123405-0;Lopez, Maria;01/01/2010;F;01/01/2005;MENOR;01/08/2026;A;BASIC;tutor@mail.com;Invalido Nacimiento > Afiliacion
+40123406;20-40123406-4;Gimenez, Hector;01/01/2010;M;01/01/2012;MENOR;01/01/2008;A;BASIC;tutor@mail.com;Invalido Nacimiento > Cuota
+40123407;20-40123407-2;Ramirez, Pedro;01/01/1990;M;01/01/2020;MENOR;01/08/2026;A;BASIC;;Invalido Categoria (Adulto como MENOR)
+40123408;27-40123408-5;Suarez, Lucia;01/01/2015;F;01/01/2025;ADULTO;01/08/2026;A;BASIC;tutor@mail.com;Invalido Categoria (Menor como ADULTO)
+40123409;20-40123409-9;Cruz, Roberto;01/01/1990;M;15/05/2025;ADULTO;14/05/2025;A;BASIC;;Invalido Cuota (1 dia antes de afil)
+40123410;27-40123410-7;Silva, Camila;01/01/1990;F;15/05/2025;ADULTO;15/05/2025;A;BASIC;;Valido Limite (Cuota = Afiliacion)
+40123411;20-40123411-0;Mendez, Hugo;10/10/2000;M;09/10/2000;ADULTO;01/08/2026;A;BASIC;;Invalido Afiliacion (1 dia antes nacer)
+40123412;27-40123412-3;Rojas, Sofia;10/10/2000;F;10/10/2000;ADULTO;01/08/2026;A;BASIC;;Valido Limite (Afiliacion = Nacimiento)
+40123413;20-40123413-7;Gomez, Carlos;32/01/1990;M;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido Fecha Nac (Dia 32)
+40123414;23-40123414-4;Perez, Maria;01/01/1990;F;15/13/2020;ADULTO;01/08/2026;A;BASIC;;Invalido Fecha Afil (Mes 13)
+40123415;20-40123415-3;Lopez, Juan;01/01/1990;M;01/01/2020;ADULTO;29/02/2023;A;BASIC;;Invalido Fecha Cuota (29 Feb No Bisiesto)
+40123416;27-40123416-6;Martinez, Lucia;XX/01/1990;F;01/01/2020;ADULTO;01/08/2026;A;BASIC;;Invalido Fecha Nac (Letras)
+;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (DNI)
+60000001;;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (CUIL)
+60000002;20-30123456-3;;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (Apellidos y Nombres)
+60000003;20-30123456-3;Perez, Juan;;M;15/01/2020;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (Fecha de Nacimiento)
+60000004;20-30123456-3;Perez, Juan;10/05/1980;;15/01/2020;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (Sexo)
+60000005;20-30123456-3;Perez, Juan;10/05/1980;M;;ADULTO;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (Fecha de afiliación)
+60000006;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;;01/08/2026;A;VIP;tutor@mail.com;Invalido Campo Nulo (Categoría)
+60000007;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;;A;VIP;tutor@mail.com;Invalido Campo Nulo (Fecha de última cuota paga)
+60000008;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;;VIP;tutor@mail.com;Invalido Campo Nulo (Estado)
+60000009;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;;tutor@mail.com;Invalido Campo Nulo (Plan)
+60000010;20-30123456-3;Perez, Juan;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;;Invalido Campo Nulo (Email Tutor)
+30A23456;20-30123456-3;Alfa, Numerico;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;VIP;;Invalido DNI (Alfanumerico)
+11111112;20-11111112-0;Prueba, Resto Cero;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido CUIL Modulo11 (Resto 0)
+11111121;20-11111121-9;Prueba, Resto Uno Hombre;10/05/1980;M;15/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido CUIL Modulo11 Hombre (Resto 1)
+10000002;27-10000002-4;Prueba, Resto Uno Mujer;10/05/1980;F;15/01/2020;ADULTO;01/08/2026;A;BASIC;;Valido CUIL Modulo11 Mujer (Resto 1)
