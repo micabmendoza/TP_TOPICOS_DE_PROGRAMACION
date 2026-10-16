@@ -171,7 +171,56 @@ int socios_listar_ALU(const t_indice *indice, const char *path)
     /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
        implementacion. En la entrega no puede quedar ninguna llamada a una
        funcion de la biblioteca que tenga version _ALU. */
-    return socios_listar(indice, path);
+
+    FILE *pf;
+    t_reg_indice *arreglo_indice;
+    t_socio socio_leido;
+    unsigned i;
+
+    // Abrir socios.dat en modo de lectura binaria
+    pf = fopen(path, "rb");
+    if (pf == NULL)
+        return ERROR;
+
+    // Castear de t_indice para que apunte al tipo t_reg_indice
+    arreglo_indice = (t_reg_indice *) indice->vindice;
+
+    // Imprimir encabezado
+    printf("\n");
+    printf("%-9s %-14s %-32s %-10s %-1s %-10s %-7s %-10s %-1s %-8s %s\n",
+           "DNI", "CUIL", "APELLIDOS Y NOMBRES",
+           "NACIMIENTO", "S", "AFILIACION", "CATEG.",
+           "ULT.CUOTA", "E", "PLAN", "EMAIL TUTOR");
+
+    // Recorrer el índice completo
+    for(i = 0; i < indice->cantidad_elementos_actual; i++)
+    {
+        // Saltear al byte físico del archivo socios.dat, aprovechando la utilidad del índice
+        fseek(pf, arreglo_indice[i].nro_reg * sizeof(t_socio), SEEK_SET);
+
+        // Leer el registro
+        fread(&socio_leido, sizeof(t_socio), 1, pf);
+
+        // Imprimir el registro
+        printf("%-9ld %-14s %-32s %02d/%02d/%04d %c %02d/%02d/%04d %-7s %02d/%02d/%04d %c %-8s %s\n",
+               socio_leido.dni,
+               socio_leido.cuil,
+               socio_leido.apellidos_nombres,
+               socio_leido.fecha_nacimiento.dia, socio_leido.fecha_nacimiento.mes, socio_leido.fecha_nacimiento.anio,
+               socio_leido.sexo,
+               socio_leido.fecha_afiliacion.dia, socio_leido.fecha_afiliacion.mes, socio_leido.fecha_afiliacion.anio,
+               socio_leido.categoria,
+               socio_leido.fecha_ultima_cuota.dia, socio_leido.fecha_ultima_cuota.mes, socio_leido.fecha_ultima_cuota.anio,
+               socio_leido.estado,
+               socio_leido.plan,
+               socio_leido.email_tutor);
+    }
+
+    // Imprimir contador final de socios activos
+    printf("\nTotal de socios activos: %u\n", indice->cantidad_elementos_actual);
+
+    fclose(pf);
+    return OK;
 }
 
 /******************************************************************************
