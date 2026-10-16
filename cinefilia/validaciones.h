@@ -23,5 +23,7 @@ int email_valido(const char *);
 
 void calcular_cuil_ALU(long dni, char sexo, char *dest);
 int email_valido_ALU(const char *email);
+// funcion auxiliar
+void insertar_dni_en_cuil_aux(long nro_dni, char *dest);
 
 #endif /* VALIDACIONES_H_INCLUDED */
