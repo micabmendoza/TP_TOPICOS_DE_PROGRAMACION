@@ -172,17 +172,20 @@ int socios_listar_ALU(const t_indice *indice, const char *path)
        implementacion. En la entrega no puede quedar ninguna llamada a una
        funcion de la biblioteca que tenga version _ALU. */
 
-    FILE *pf;
+    FILE *fp;
     t_reg_indice *arreglo_indice;
     t_socio socio_leido;
     unsigned i;
 
     // Abrir socios.dat en modo de lectura binaria
-    pf = fopen(path, "rb");
-    if (pf == NULL)
+    fp = fopen(path, "rb");
+    if (fp == NULL)
+    {
+        printf("\nError al intentar abrir el archivo binario %s.", path);
         return ERROR;
+    }
 
-    // Castear de t_indice para que apunte al tipo t_reg_indice
+    // Castear vindice, que apunta a void, para que apunte al tipo t_reg_indice
     arreglo_indice = (t_reg_indice *) indice->vindice;
 
     // Imprimir encabezado
@@ -192,14 +195,14 @@ int socios_listar_ALU(const t_indice *indice, const char *path)
            "NACIMIENTO", "S", "AFILIACION", "CATEG.",
            "ULT.CUOTA", "E", "PLAN", "EMAIL TUTOR");
 
-    // Recorrer el índice completo
+    // Recorrer vindice completo
     for(i = 0; i < indice->cantidad_elementos_actual; i++)
     {
         // Saltear al byte físico del archivo socios.dat, aprovechando la utilidad del índice
-        fseek(pf, arreglo_indice[i].nro_reg * sizeof(t_socio), SEEK_SET);
+        fseek(fp, arreglo_indice[i].nro_reg * sizeof(t_socio), SEEK_SET);
 
         // Leer el registro
-        fread(&socio_leido, sizeof(t_socio), 1, pf);
+        fread(&socio_leido, sizeof(t_socio), 1, fp);
 
         // Imprimir el registro
         printf("%-9ld %-14s %-32s %02d/%02d/%04d %c %02d/%02d/%04d %-7s %02d/%02d/%04d %c %-8s %s\n",
@@ -219,7 +222,7 @@ int socios_listar_ALU(const t_indice *indice, const char *path)
     // Imprimir contador final de socios activos
     printf("\nTotal de socios activos: %u\n", indice->cantidad_elementos_actual);
 
-    fclose(pf);
+    fclose(fp);
     return OK;
 }
 
