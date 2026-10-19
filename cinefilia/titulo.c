@@ -59,5 +59,47 @@ int titulos_listar_ALU(const t_indice *indice, const char *path)
     /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
        implementacion. En la entrega no puede quedar ninguna llamada a una
        funcion de la biblioteca que tenga version _ALU. */
-    return titulos_listar(indice, path);
+  
+    FILE *fp;
+    t_reg_indice *arreglo_indice;
+    t_titulo titulo_leido;
+    unsigned i;
+
+    // Abrir titulos.dat en modo de lectura binaria
+    fp = fopen(path, "rb");
+    if (fp == NULL)
+    {
+        printf("\nError al intentar abrir el archivo binario %s.", path);
+        return ERROR;
+    }
+
+    // Castear vindice, que apunta a void, para que apunte al tipo t_reg_indice
+    arreglo_indice = (t_reg_indice*) indice->vindice;
+
+    // Imprimir encabezado
+    printf("%-7s %-60s %-20s %5s %s\n", "ID", "TITULO", "GENERO", "STOCK", "E");
+
+    // Recorrer vindice completo
+    for (i = 0; i < indice->cantidad_elementos_actual; i++)
+    {
+        // Saltear al byte físico del archivo titulos.dat, aprovechando la utilidad del índice
+        fseek(fp, arreglo_indice[i].nro_reg * sizeof(t_titulo), SEEK_SET);
+
+        // Leer el registro
+        fread(&titulo_leido, sizeof(t_titulo), 1, fp);
+
+        // Imprimir el registro
+        printf("%-7d %-60s %-20s %5d %c\n",
+               titulo_leido.id,
+               titulo_leido.titulo,
+               titulo_leido.genero,
+               titulo_leido.stock,
+               titulo_leido.estado);
+    }
+
+    // Imprimir contador final de titulos activos
+    printf("\nTotal de titulos activos: %u\n", indice->cantidad_elementos_actual);
+
+    fclose(fp);
+    return OK;
 }
