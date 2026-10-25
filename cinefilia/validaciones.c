@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "validaciones.h"
+#define DIGITOS_DNI 8
 
-void insertar_dni_en_cuil(long nro_dni, char *dest)
+void insertar_dni_en_cuil_aux(long nro_dni, char *dest)
 {
     int posicion_escritura = 10;
 
@@ -62,7 +63,7 @@ void calcular_cuil_ALU(long dni, char sexo, char *dest)
     dest[0] = (prefijo / 10) + '0';
     dest[1] = (prefijo % 10) + '0';
     dest[2] = '-';
-    insertar_dni_en_cuil(dni, dest);
+    insertar_dni_en_cuil_aux(dni, dest);
     dest[11] = '-';
     dest[12] = z + '0';
     dest[13] = '\0';
