@@ -3,6 +3,9 @@
 
 /* Reglas de negocio puras: no dependen del indice ni de los archivos */
 
+/* ---- DNI ---- */
+#define DIGITOS_DNI 8
+
 /* ---- CUIL (Anexo A.1) ---- */
 #define TAM_CUIL 14      /* "XY-NNNNNNNN-Z" + '\0' */
 #define PREFIJO_HOMBRE 20

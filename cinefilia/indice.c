@@ -18,10 +18,15 @@ Observaciones:  -
 ******************************************************************************/
 int indice_crear_ALU(t_indice *indice, size_t nmemb, size_t tamanyo)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return indice_crear(indice, nmemb, tamanyo);
+    indice->vindice = malloc(nmemb * tamanyo);
+    if(indice->vindice == NULL){
+        return ERROR;
+    }
+    indice->cantidad_elementos_actual = 0;
+    indice->cantidad_elementos_maxima = nmemb;
+
+    //return indice_crear(indice, nmemb, tamanyo);
+    return OK;
 }
 
 /******************************************************************************
@@ -36,10 +41,26 @@ Observaciones:  Si el producto no aumenta la capacidad (arreglos muy chicos)
 ******************************************************************************/
 int indice_redimensionar_ALU(t_indice *indice, size_t tamanyo)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return indice_redimensionar(indice, tamanyo);
+    void *p_aux;
+    unsigned nueva_cant_elementos;
+
+    nueva_cant_elementos = (unsigned)(indice->cantidad_elementos_maxima * INCREMENTO);
+
+    if (nueva_cant_elementos == indice->cantidad_elementos_maxima)
+    {
+        nueva_cant_elementos++;
+    }
+    p_aux = realloc(indice->vindice, nueva_cant_elementos * tamanyo);
+    if (p_aux == NULL)
+    {
+        return ERROR;
+    }
+
+    indice->vindice = p_aux;
+    indice->cantidad_elementos_maxima = nueva_cant_elementos;
+
+    //return indice_redimensionar(indice, tamanyo);
+    return OK;
 }
 
 /******************************************************************************
