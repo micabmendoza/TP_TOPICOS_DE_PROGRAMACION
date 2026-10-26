@@ -72,10 +72,32 @@ Observaciones:  -
 ******************************************************************************/
 int cargar_indices_ALU(t_indice *ind_socios, t_indice *ind_titulos)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return cargar_indices(ind_socios, ind_titulos);
+    int res_socios;
+    int res_titulos;
+
+    /* 1. Cargamos el indice de socios desde socios.dat */
+    res_socios = indice_cargar_ALU(ARCH_SOCIOS_BIN,
+                               ind_socios,
+                               sizeof(t_socio),
+                               clave_socio,
+                               activo_socio,
+                               compara_reg_indice_ALU);
+
+    /* 2. Cargamos el indice de titulos desde titulos.dat */
+    res_titulos = indice_cargar_ALU(ARCH_TITULOS_BIN,
+                                ind_titulos,
+                                sizeof(t_titulo),
+                                clave_titulo,
+                                activo_titulo,
+                                compara_reg_indice_ALU);
+
+    /* 3. Retornamos 1 (OK) solo si ambos archivos existían y cargaron bien */
+    if (res_socios == OK && res_titulos == OK)
+    {
+        return OK;
+    }
+
+    return ERROR;
 }
 
 /******************************************************************************
