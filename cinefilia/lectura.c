@@ -55,10 +55,17 @@ Observaciones:  Se usa como cmp en todas las operaciones del TDA indice.
 ******************************************************************************/
 int compara_reg_indice_ALU(const void *a, const void *b)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return compara_reg_indice(a, b);
+    // Casteamos los parametros para que apunten a t_reg_indice
+    const t_reg_indice *reg1 = (const t_reg_indice*) a;
+    const t_reg_indice *reg2 = (const t_reg_indice*) b;
+
+    // Comparamos por ID
+    if(reg1->id < reg2->id)
+        return -1;
+    if(reg1->id > reg2->id)
+        return 1;
+
+    return 0;
 }
 
 /******************************************************************************
