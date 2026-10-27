@@ -90,8 +90,16 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
             puts("Error en la solicitud de memoria.\n");
             return ERROR;
         }
-        // Actualizamos p_inicio por si realloc movió la memoria a otra dirección
+        // Actualizamos p_inicio por si realloc moviÃ³ la memoria a otra direcciÃ³n
         p_inicio = (char *)indice->vindice;
+    }
+
+    // Si el vector estÃ¡ vacÃ­o, inserta al principio y sale
+    if (indice->cantidad_elementos_actual == 0)
+    {
+        memcpy(p_inicio, registro, tamanyo);
+        indice->cantidad_elementos_actual++;
+        return OK;
     }
 
     //Apunto a al ultimo elemento del vector
@@ -112,7 +120,7 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
         return ERROR;
     }
 
-    // El hueco para insertar quedó en (p_actual + tamanyo) o en p_inicio si p_actual quedó antes del inicio
+    // El hueco para insertar quedÃ³ en (p_actual + tamanyo) o en p_inicio si p_actual quedÃ³ antes del inicio
     char *p_hueco = (p_actual < p_inicio) ? p_inicio : p_actual + tamanyo;
 
     //Copiamos el registro nuevo en el espacio libre
