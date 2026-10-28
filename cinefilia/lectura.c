@@ -41,10 +41,73 @@ int leer_archivo_texto_ALU(const char *path_txt, FILE *arch_bin, t_indice *indic
                        long (*obtener_clave)(const void *),
                        unsigned *aceptados, unsigned *rechazados)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return leer_archivo_texto(path_txt, arch_bin, indice, reg, tamanyo, fecha_proceso, parsear, validar, rechazar, obtener_clave, aceptados, rechazados);
+    FILE *f_csv;
+    char linea[TAM_LINEA];
+    char tipo_error[TAM_TIPO_ERROR];
+    t_contexto contexto;
+    t_reg_indice reg_ind;
+    unsigned nro_reg;
+    char *aux;
+
+    // Abrimos el archivo CSV a leer
+    f_csv = fopen(path_txt, "rt");
+    if(f_csv == NULL)
+        return ERROR;
+
+    // Inicializamos contadores en 0
+    *aceptados = 0;
+    *rechazados = 0;
+
+    // Armamos el contexto de validacion
+    contexto.indice = indice;
+    contexto.arch_bin = arch_bin;
+    contexto.fecha_proceso = fecha_proceso;
+    contexto.id_modificando = 0;
+
+    // Recorremos el .txt linea por linea
+    while(fgets(linea, sizeof(linea), f_csv) != NULL)
+    {
+        // Limpiamos el salto de linea por haber usado fgets
+        aux = strchr(linea, '\n');
+        if(aux != NULL)
+            *aux = '\0';
+
+        // Parseamos solo si la linea no esta vacia
+        if(linea[0] != '\0')
+        {
+            // Parseamos y lo registramos en caso de falla
+            if(parsear(linea, reg) == ERROR)
+            {
+                (*rechazados)++;
+                strcpy(tipo_error, "FORMATO");
+                rechazar(reg, linea, tipo_error, fecha_proceso);
+            }
+            // Validamos lo parseado y lo registramos en caso de falla
+            else if(validar(reg, &contexto, tipo_error) == ERROR)
+            {
+                (*rechazados)++;
+                rechazar(reg, linea, tipo_error, fecha_proceso);
+            }
+            // Registro valido: lo escribimos al final de .dat y lo insertamos en el indice
+            else
+            {
+                fseek(arch_bin, 0, SEEK_END);
+                nro_reg = (unsigned)(ftell(arch_bin) / tamanyo);
+
+                fwrite(reg, tamanyo, 1, arch_bin);
+
+                reg_ind.id = obtener_clave(reg);
+                reg_ind.nro_reg = nro_reg;
+
+                indice_insertar_ALU(indice, &reg_ind, sizeof(t_reg_indice), compara_reg_indice_ALU);
+
+                (*aceptados)++;
+            }
+        }
+    }
+
+    fclose(f_csv);
+    return OK;
 }
 
 /******************************************************************************
