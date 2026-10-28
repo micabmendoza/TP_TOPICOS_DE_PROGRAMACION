@@ -296,10 +296,7 @@ int indice_cargar_ALU(const char *path, t_indice *indice, size_t tamanyo_reg,
 
     FILE *pf = fopen(path, "rb");
     if (!pf)
-    {
-        puts("Error en la apertura del archivo.\n");
         return ERROR;
-    }
 
     indice_vaciar_ALU(indice);
 
