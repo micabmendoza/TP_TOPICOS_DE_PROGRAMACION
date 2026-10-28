@@ -55,10 +55,17 @@ Observaciones:  Se usa como cmp en todas las operaciones del TDA indice.
 ******************************************************************************/
 int compara_reg_indice_ALU(const void *a, const void *b)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return compara_reg_indice(a, b);
+    // Casteamos los parametros para que apunten a t_reg_indice
+    const t_reg_indice *reg1 = (const t_reg_indice*) a;
+    const t_reg_indice *reg2 = (const t_reg_indice*) b;
+
+    // Comparamos por ID
+    if(reg1->id < reg2->id)
+        return -1;
+    if(reg1->id > reg2->id)
+        return 1;
+
+    return 0;
 }
 
 /******************************************************************************
@@ -72,10 +79,32 @@ Observaciones:  -
 ******************************************************************************/
 int cargar_indices_ALU(t_indice *ind_socios, t_indice *ind_titulos)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return cargar_indices(ind_socios, ind_titulos);
+    int res_socios;
+    int res_titulos;
+
+    /* 1. Cargamos el indice de socios desde socios.dat */
+    res_socios = indice_cargar_ALU(ARCH_SOCIOS_BIN,
+                               ind_socios,
+                               sizeof(t_socio),
+                               clave_socio,
+                               activo_socio,
+                               compara_reg_indice_ALU);
+
+    /* 2. Cargamos el indice de titulos desde titulos.dat */
+    res_titulos = indice_cargar_ALU(ARCH_TITULOS_BIN,
+                                ind_titulos,
+                                sizeof(t_titulo),
+                                clave_titulo,
+                                activo_titulo,
+                                compara_reg_indice_ALU);
+
+    /* 3. Retornamos 1 (OK) solo si ambos archivos existían y cargaron bien */
+    if (res_socios == OK && res_titulos == OK)
+    {
+        return OK;
+    }
+
+    return ERROR;
 }
 
 /******************************************************************************
@@ -92,8 +121,83 @@ Observaciones:  Los rechazos de socios se auditan en errores_socios.txt; los
 ******************************************************************************/
 int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fecha *fecha_proceso)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return generar_binarios(ind_socios, ind_titulos, fecha_proceso);
+    FILE *fp_socios, *fp_titulos;
+    t_socio socio_buffer;
+    t_titulo titulo_buffer;
+    unsigned aceptados_s = 0, rechazados_s = 0;
+    unsigned aceptados_t = 0, rechazados_t = 0;
+
+    // Se vacian los indices previos
+    indice_vaciar_ALU(ind_socios);
+    indice_vaciar_ALU(ind_titulos);
+
+    // Se sobreescriben los archivos
+    fp_socios = fopen(ARCH_SOCIOS_BIN, "w+b");
+    if(fp_socios == NULL)
+    {
+        puts("Error al crear el archivo binario de socios.\n");
+        return ERROR;
+    }
+
+    fp_titulos = fopen(ARCH_TITULOS_BIN, "w+b");
+    if(fp_titulos == NULL)
+    {
+        fclose(fp_socios);
+        puts("Error al crear el archivo binario de titulos.\n");
+        return ERROR;
+    }
+
+    // Se procesan ambos .csv a traves de la funcion generica de lectura
+    if(leer_archivo_texto_ALU(ARCH_SOCIOS_CSV,
+                              fp_socios,
+                              ind_socios,
+                              &socio_buffer,
+                              sizeof(t_socio),
+                              fecha_proceso,
+                              texto_a_socio_ALU,
+                              valida_socio_ALU,
+                              rechaza_socio,
+                              clave_socio,
+                              &aceptados_s,
+                              &rechazados_s) == ERROR)
+    {
+        fclose(fp_socios);
+        fclose(fp_titulos);
+        return ERROR;
+    }
+
+    if(leer_archivo_texto_ALU(ARCH_TITULOS_CSV,
+                              fp_titulos,
+                              ind_titulos,
+                              &titulo_buffer,
+                              sizeof(t_titulo),
+                              fecha_proceso,
+                              texto_a_titulo_ALU,
+                              valida_titulo_ALU,
+                              rechaza_titulo,
+                              clave_titulo,
+                              &aceptados_t,
+                              &rechazados_t) == ERROR)
+    {
+        fclose(fp_socios);
+        fclose(fp_titulos);
+        return ERROR;
+    }
+
+    // Cerramos los archivos binarios ya cargados
+    fclose(fp_socios);
+    fclose(fp_titulos);
+
+    // Reconstruimos los indices
+    if(cargar_indices_ALU(ind_socios, ind_titulos) == ERROR)
+    {
+        puts("Error al reconstruir los indices tras la generacion.\n");
+        return ERROR;
+    }
+
+    // Reporte final
+    printf("Socios:  %u aceptados, %u rechazados (ver %s)\n", aceptados_s, rechazados_s, ARCH_ERRORES);
+    printf("Titulos: %u aceptados, %u rechazados\n", aceptados_t, rechazados_t);
+
+    return OK;
 }

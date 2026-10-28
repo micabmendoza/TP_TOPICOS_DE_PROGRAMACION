@@ -1,0 +1,11 @@
+cinefilia/bin/
+cinefilia/obj/
+cinefilia/cinefilia.depend
+cinefilia/cinefilia.layout
+
+# Ignorar archivos generados por el sistema
+cinefilia/archivos/*.dat
+cinefilia/archivos/*.txt
+
+# Exceptuar el archivo de novedades que dio el profe
+!cinefilia/archivos/novedades_catalogo.dat
