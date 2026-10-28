@@ -98,7 +98,7 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
 
     if(indice_buscar_ALU(ind_socios, &reg_socio, sizeof(t_reg_indice), compara_reg_indice_ALU) == NO_EXISTE)
     {
-        puts("Alquiler rechazado: el socio no existe o esta dado de baja.");
+        puts("Alquiler rechazado: el socio no existe o esta dado de baja.\n");
         limpiar_entrada();
         return ERROR;
     }
@@ -110,6 +110,7 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
 
     if(socio_leer_ALU(fp_socios, reg_socio.nro_reg, &socio) == ERROR)
     {
+        puts("Alquiler rechazado: no se pudo leer el socio.\n");
         fclose(fp_socios);
         return ERROR;
     }
@@ -138,8 +139,9 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
     if(fp_titulos == NULL)
         return ERROR;
 
-    if(titulo_leer(fp_titulos, reg_titulo.nro_reg, &titulo) == NO_EXISTE)
+    if(titulo_leer(fp_titulos, reg_titulo.nro_reg, &titulo) == ERROR)
     {
+        printf("Alquiler rechazado: no se pudo leer el titulo.\n");
         fclose(fp_titulos);
         return ERROR;
     }
