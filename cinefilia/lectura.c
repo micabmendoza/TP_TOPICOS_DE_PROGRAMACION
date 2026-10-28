@@ -196,7 +196,7 @@ int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fe
     }
 
     // Reporte final
-    printf("Socios:  %u aceptados, %u rechazados (ver archivos/%s)\n", aceptados_s, rechazados_s, ARCH_ERRORES);
+    printf("Socios:  %u aceptados, %u rechazados (ver %s)\n", aceptados_s, rechazados_s, ARCH_ERRORES);
     printf("Titulos: %u aceptados, %u rechazados\n", aceptados_t, rechazados_t);
 
     return OK;
