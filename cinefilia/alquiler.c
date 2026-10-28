@@ -17,10 +17,44 @@ Observaciones:  -
 ******************************************************************************/
 void tablero_mostrar_ALU(t_matriz_consumo m)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    tablero_mostrar(m);
+    int i, j, total=0, total_por_plan, total_por_genero[CANT_GENEROS] = {0};
+
+    // Encabezado
+    printf("\n%-11s", "PLAN");
+    for(i=0; i < CANT_GENEROS; i++)
+    {
+        printf("%21s", GENEROS[i]);
+    }
+    printf("%11s", "TOTAL");
+
+    // Cuerpo
+    for(i = 0; i < CANT_PLANES; i++)
+    {
+        total_por_plan = 0;
+
+        printf("\n%-11s", PLANES[i]);
+
+        for(j = 0; j < CANT_GENEROS; j++)
+        {
+            total_por_plan += m[i][j];
+            total_por_genero[j] += m[i][j];
+            total += m[i][j];
+
+            printf("%21d", m[i][j]);
+        }
+
+        printf("%11d", total_por_plan);
+    }
+
+    // Fila final total por genero
+    printf("\n%-11s", "TOTAL");
+    for(i = 0; i < CANT_GENEROS; i++)
+        printf("%21d", total_por_genero[i]);
+
+    // Ultimo total general
+    printf("%11d", total);
+
+    printf("\n");
 }
 
 /******************************************************************************
