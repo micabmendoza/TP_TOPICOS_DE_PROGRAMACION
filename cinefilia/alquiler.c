@@ -76,8 +76,98 @@ Observaciones:  Si una etapa falla se informa el motivo y no se ejecutan las
 int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_socios,
              const char *path_titulos, t_matriz_consumo matriz_consumo, const t_fecha *fecha_proceso)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    return alquilar(ind_socios, ind_titulos, path_socios, path_titulos, matriz_consumo, fecha_proceso);
+    FILE *fp_socios, *fp_titulos;
+    t_reg_indice reg_socio, reg_titulo;
+    t_socio socio;
+    t_titulo titulo;
+    long dni_ingresado;
+    int id_titulo_ingresado;
+    int id_plan, id_genero;
+
+    // Lectura y validacion de DNI
+    printf("DNI del socio: ");
+    if(scanf("%ld", &dni_ingresado) != 1 || dni_ingresado < DNI_MIN || dni_ingresado > DNI_MAX)
+    {
+        puts("Alquiler rechazado: DNI invalido.");
+        return ERROR;
+    }
+
+    // Busqueda del socio en el indice
+    reg_socio.id = dni_ingresado;
+
+    if(indice_buscar_ALU(ind_socios, &reg_socio, sizeof(t_reg_indice), compara_reg_indice_ALU) == NO_EXISTE)
+    {
+        puts("Alquiler rechazado: el socio no existe o esta dado de baja.");
+        return ERROR;
+    }
+
+    // Lectura del socio
+    fp_socios = fopen(path_socios, "rb");
+    if(fp_socios == NULL)
+        return ERROR;
+
+    if(socio_leer_ALU(fp_socios, reg_socio.nro_reg, &socio) == ERROR)
+    {
+        fclose(fp_socios);
+        return ERROR;
+    }
+
+    fclose(fp_socios);
+
+    // Validacion de ID de pelicula
+    printf("ID de la pelicula: ");
+    if (scanf("%d", &id_titulo_ingresado) != 1 || id_titulo_ingresado <= 0)
+    {
+        puts("Alquiler rechazado: ID invalido.");
+        return ERROR;
+    }
+
+    reg_titulo.id = id_titulo_ingresado;
+    if (indice_buscar_ALU(ind_titulos, &reg_titulo, sizeof(t_reg_indice), compara_reg_indice_ALU) == NO_EXISTE)
+    {
+        puts("Alquiler rechazado: el titulo no existe.");
+        return ERROR;
+    }
+
+    // Lectura del titulo
+    fp_titulos = fopen(path_titulos, "r+b");
+    if(fp_titulos == NULL)
+        return ERROR;
+
+    if(titulo_leer(fp_titulos, reg_titulo.nro_reg, &titulo) == NO_EXISTE)
+    {
+        fclose(fp_titulos);
+        return ERROR;
+    }
+
+    // Verificacion de stock
+    if (titulo.stock <= 0)
+    {
+        fclose(fp_titulos);
+        printf("Alquiler rechazado: sin stock de \"%s\".\n", titulo.titulo);
+        return ERROR;
+    }
+
+    // Actualizacion de stock en titulos.dat
+    titulo.stock--;
+    titulo_escribir(fp_titulos, reg_titulo.nro_reg, &titulo);
+
+    fclose(fp_titulos);
+
+    // Actualizacion de matriz de consumo
+    id_plan = plan_indice(socio.plan);
+    id_genero = genero_indice(titulo.genero);
+
+    if(id_plan != -1 && id_genero != -1)
+        matriz_consumo[id_plan][id_genero]++;
+
+    // Impresion del comprobante
+    printf("\n========== COMPROBANTE DE ALQUILER ==========\n");
+    printf(" Fecha    : %02d/%02d/%04d\n", fecha_proceso->dia, fecha_proceso->mes, fecha_proceso->anio);
+    printf(" Socio    : %ld - %s (plan %s)\n", socio.dni, socio.apellidos_nombres, socio.plan);
+    printf(" Titulo   : %d - %s (%s)\n", titulo.id, titulo.titulo, titulo.genero);
+    printf(" Stock restante: %d\n", titulo.stock);
+    printf("=============================================\n");
+
+    return OK;
 }
