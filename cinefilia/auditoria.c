@@ -37,7 +37,6 @@ int auditoria_registrar_ALU(const char *path, const char *dni_texto,
 
     fclose(pf_arch);
     return OK;
-    //return auditoria_registrar(path, dni_texto, tipo_error, fecha_proceso);
 }
 
 /******************************************************************************
@@ -160,5 +159,4 @@ int auditoria_mostrar_ALU(const char *path)
     }
 
     return OK;
-    //return auditoria_mostrar(path);
 }

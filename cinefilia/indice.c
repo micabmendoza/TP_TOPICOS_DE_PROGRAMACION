@@ -26,7 +26,6 @@ int indice_crear_ALU(t_indice *indice, size_t nmemb, size_t tamanyo)
     indice_vaciar_ALU(indice);
     indice->cantidad_elementos_maxima = nmemb;
 
-    //return indice_crear(indice, nmemb, tamanyo);
     return OK;
 }
 
@@ -60,7 +59,6 @@ int indice_redimensionar_ALU(t_indice *indice, size_t tamanyo)
     indice->vindice = p_aux;
     indice->cantidad_elementos_maxima = nueva_cant_elementos;
 
-    //return indice_redimensionar(indice, tamanyo);
     return OK;
 }
 
@@ -209,7 +207,6 @@ int indice_buscar_ALU(const t_indice *indice, void *registro, size_t tamanyo,
 
     memcpy(registro,p_actual, tamanyo);
     return ((p_actual - p_inicio)/tamanyo);
-    //return indice_buscar(indice, registro, tamanyo, cmp);
 }
 
 /******************************************************************************
@@ -221,7 +218,6 @@ Observaciones:  -
 int indice_vacio_ALU(const t_indice *indice)
 {
     return (indice->cantidad_elementos_actual == 0) ? OK : ERROR;
-    //return indice_vacio(indice);
 }
 
 /******************************************************************************
@@ -232,9 +228,7 @@ Observaciones:  -
 ******************************************************************************/
 int indice_lleno_ALU(const t_indice *indice)
 {
-
     return (indice->cantidad_elementos_actual == indice->cantidad_elementos_maxima) ? OK : ERROR;
-    //return indice_lleno(indice);
 }
 
 /******************************************************************************
@@ -246,7 +240,6 @@ Observaciones:  -
 void indice_vaciar_ALU(t_indice *indice)
 {
     indice->cantidad_elementos_actual = 0;
-    //indice_vaciar(indice);
 }
 
 /******************************************************************************
@@ -265,7 +258,6 @@ void indice_destruir_ALU(t_indice *indice)
         indice_vaciar_ALU(indice);
         indice->cantidad_elementos_maxima = 0;
     }
-    //indice_destruir(indice);
 }
 
 /******************************************************************************
@@ -334,5 +326,4 @@ int indice_cargar_ALU(const char *path, t_indice *indice, size_t tamanyo_reg,
     fclose(pf);
 
     return OK;
-    //return indice_cargar(path, indice, tamanyo_reg, obtener_clave, es_activo, cmp);
 }
