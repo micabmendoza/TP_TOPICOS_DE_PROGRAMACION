@@ -557,7 +557,7 @@ int socio_baja_ALU(t_indice *indice, const char *path)
 
     fclose(arch);
 
-    indice_eliminar_ALU(indice, &reg_busc, sizeof(t_reg_indice), compara_reg_indice);
+    indice_eliminar_ALU(indice, &reg_busc, sizeof(t_reg_indice), compara_reg_indice_ALU);
     printf("Socio %ld (%s) dado de baja.\n", socio.dni, socio.apellidos_nombres);
     return OK;
 }
