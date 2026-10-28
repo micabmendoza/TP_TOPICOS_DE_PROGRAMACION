@@ -122,7 +122,7 @@ Observaciones:  -
 int titulos_listar_ALU(const t_indice *indice, const char *path)
 {
     FILE *fp;
-    t_reg_indice *arreglo_indice;
+    const t_reg_indice *arreglo_indice;
     t_titulo titulo_leido;
     unsigned i;
 
@@ -138,24 +138,17 @@ int titulos_listar_ALU(const t_indice *indice, const char *path)
     arreglo_indice = (t_reg_indice*) indice->vindice;
 
     // Imprimir encabezado
-    printf("%-7s %-60s %-20s %5s %s\n", "ID", "TITULO", "GENERO", "STOCK", "E");
+    titulos_encabezado();
 
     // Recorrer vindice completo
     for (i = 0; i < indice->cantidad_elementos_actual; i++)
     {
-        // Saltear al byte físico del archivo titulos.dat, aprovechando la utilidad del índice
-        fseek(fp, arreglo_indice[i].nro_reg * sizeof(t_titulo), SEEK_SET);
-
-        // Leer el registro
-        fread(&titulo_leido, sizeof(t_titulo), 1, fp);
-
-        // Imprimir el registro
-        printf("%-7d %-60s %-20s %5d %c\n",
-               titulo_leido.id,
-               titulo_leido.titulo,
-               titulo_leido.genero,
-               titulo_leido.stock,
-               titulo_leido.estado);
+        // Lectura directa por numero de registro fisico
+        if (titulo_leer(fp, arreglo_indice[i].nro_reg, &titulo_leido) == OK)
+        {
+            // Impresion formateada del titulo
+            titulo_mostrar(&titulo_leido);
+        }
     }
 
     // Imprimir contador final de titulos activos
