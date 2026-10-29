@@ -78,17 +78,17 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
 {
     char *p_inicio = (char *)indice->vindice;
     char *p_actual;
+    char *p_hueco;
+    size_t bytes_a_mover;
 
-    //Verifico si el vector esta lleno
+    // Verifico si el vector esta lleno
     if(indice_lleno_ALU(indice) == OK)
     {
-        //Ampliar el vector
         if(indice_redimensionar_ALU(indice,tamanyo) == ERROR)
         {
-            puts("Error en la solicitud de memoria.\n");
-            return ERROR;
+            return ERROR; // Se elimina el puts() por ser un TDA
         }
-        // Actualizamos p_inicio por si realloc movió la memoria a otra dirección
+        // Actualizamos p_inicio por si realloc movió la memoria
         p_inicio = (char *)indice->vindice;
     }
 
@@ -100,32 +100,49 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
         return OK;
     }
 
-    //Apunto a al ultimo elemento del vector
-    p_actual = (char*)indice->vindice + ((indice->cantidad_elementos_actual - 1) * tamanyo);
+    // Apunto al ultimo elemento del vector
+    p_actual = p_inicio + ((indice->cantidad_elementos_actual - 1) * tamanyo);
 
-    // Buscar y desplazar de derecha a izquierda (solo si hay elementos cargados)
-    while(p_actual >= p_inicio && cmp(p_actual, registro) > 0)
+    // Fase 1: Buscar la posicion SIN desplazar nada
+    while (1) 
     {
-        //copio en la siguiente posicion el valor
-        memcpy(p_actual + tamanyo, p_actual, tamanyo);
-        //Resto una posicion
-        p_actual -= tamanyo;
+        int res_cmp = cmp(p_actual, registro);
+        
+        // Si encontramos el duplicado, abortamos y la memoria queda intacta
+        if (res_cmp == 0) 
+        {
+            return ERROR; 
+        }
+        
+        // Si el elemento actual es menor, el registro va a su derecha
+        if (res_cmp < 0) 
+        {
+            p_hueco = p_actual + tamanyo;
+            break;
+        }
+        
+        // Si llegamos al principio y sigue siendo mayor, el registro va primero
+        // Esto evita restar p_actual por debajo de p_inicio 
+        if (p_actual == p_inicio) 
+        {
+            p_hueco = p_inicio;
+            break;
+        }
+        
+        p_actual -= tamanyo; 
     }
-    //Verifico si no salio por duplicados
-    if(p_actual >= p_inicio && cmp(p_actual, registro) == 0)
+
+    // Fase 2: Hacer el hueco moviendo todo el bloque de una sola vez con memmove
+    bytes_a_mover = (p_inicio + (indice->cantidad_elementos_actual * tamanyo)) - p_hueco;
+    if (bytes_a_mover > 0)
     {
-        puts("Error por duplicados\n");
-        return ERROR;
+        memmove(p_hueco + tamanyo, p_hueco, bytes_a_mover);
     }
 
-    // El hueco para insertar quedó en (p_actual + tamanyo) o en p_inicio si p_actual quedó antes del inicio
-    char *p_hueco = (p_actual < p_inicio) ? p_inicio : p_actual + tamanyo;
-
-    //Copiamos el registro nuevo en el espacio libre
+    // Fase 3: Copiamos el registro nuevo en el espacio libre
     memcpy(p_hueco, registro, tamanyo);
     indice->cantidad_elementos_actual++;
 
-    //return indice_insertar(indice, registro, tamanyo, cmp);
     return OK;
 }
 
