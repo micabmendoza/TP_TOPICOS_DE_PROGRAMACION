@@ -442,8 +442,13 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     int pos_idx;
 
     printf("DNI del socio a modificar: ");
-    scanf("%ld", &dni);
-    limpiar_entrada();
+    leer_linea(buffer_dni, sizeof(buffer_dni));
+
+    if (cadena_vacia(buffer_dni) || sscanf(buffer_dni, "%ld", &dni) != 1)
+    {
+        puts("DNI invalido.");
+        return ERROR;
+    }
 
     reg_busc.id = dni;
     pos_idx = indice_buscar_ALU(indice, &reg_busc, sizeof(t_reg_indice), compara_reg_indice_ALU);
