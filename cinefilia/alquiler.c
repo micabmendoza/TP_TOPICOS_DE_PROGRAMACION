@@ -83,23 +83,22 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
     long dni_ingresado;
     int id_titulo_ingresado;
     int id_plan, id_genero;
+    char buffer[TAM_LINEA];
 
-    // Lectura y validacion de DNI
     printf("DNI del socio: ");
-    if(scanf("%ld", &dni_ingresado) != 1 || dni_ingresado <= DNI_MIN || dni_ingresado >= DNI_MAX)
+    leer_linea(buffer, sizeof(buffer));
+
+    if(cadena_vacia(buffer) || sscanf(buffer, "%ld", &dni_ingresado) != 1 || dni_ingresado < DNI_MIN || dni_ingresado > DNI_MAX)
     {
         puts("Alquiler rechazado: DNI invalido.");
-        limpiar_entrada();
         return ERROR;
     }
 
     // Busqueda del socio en el indice
     reg_socio.id = dni_ingresado;
-
     if(indice_buscar_ALU(ind_socios, &reg_socio, sizeof(t_reg_indice), compara_reg_indice_ALU) == NO_EXISTE)
     {
-        puts("Alquiler rechazado: el socio no existe o esta dado de baja.\n");
-        limpiar_entrada();
+        puts("Alquiler rechazado: el socio no existe o esta dado de baja.");
         return ERROR;
     }
 
@@ -110,27 +109,28 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
 
     if(socio_leer_ALU(fp_socios, reg_socio.nro_reg, &socio) == ERROR)
     {
-        puts("Alquiler rechazado: no se pudo leer el socio.\n");
+        puts("Alquiler rechazado: no se pudo leer el socio.");
         fclose(fp_socios);
         return ERROR;
     }
 
     fclose(fp_socios);
 
-    // Validacion de ID de pelicula
+    // Validacion de ID de pelicula usando string
     printf("ID de la pelicula: ");
-    if (scanf("%d", &id_titulo_ingresado) != 1 || id_titulo_ingresado <= 0)
+    leer_linea(buffer, sizeof(buffer));
+
+    // Eliminamos la restriccion <= 0 para igualar la logica del profe
+    if (cadena_vacia(buffer) || sscanf(buffer, "%d", &id_titulo_ingresado) != 1)
     {
         puts("Alquiler rechazado: ID invalido.");
-        limpiar_entrada();
         return ERROR;
     }
 
     reg_titulo.id = id_titulo_ingresado;
     if (indice_buscar_ALU(ind_titulos, &reg_titulo, sizeof(t_reg_indice), compara_reg_indice_ALU) == NO_EXISTE)
     {
-        puts("Alquiler rechazado: el titulo no existe.");
-        limpiar_entrada();
+        puts("Alquiler rechazado: el titulo no existe o esta dado de baja.");
         return ERROR;
     }
 
@@ -151,7 +151,6 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
     {
         fclose(fp_titulos);
         printf("Alquiler rechazado: sin stock de \"%s\".\n", titulo.titulo);
-        limpiar_entrada();
         return ERROR;
     }
 
@@ -175,8 +174,6 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
     printf(" Titulo   : %d - %s (%s)\n", titulo.id, titulo.titulo, titulo.genero);
     printf(" Stock restante: %d\n", titulo.stock);
     printf("=============================================\n");
-
-    limpiar_entrada();
 
     return OK;
 }
