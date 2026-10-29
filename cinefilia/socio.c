@@ -351,7 +351,12 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
     long pos;
 
     printf("DNI: ");
-    scanf("%ld", &socio.dni); limpiar_entrada();
+    leer_linea(buffer_dni, sizeof(buffer_dni));
+
+    if (sscanf(buffer_dni, "%ld", &socio.dni) != 1)
+    {
+        socio.dni = 0;
+    }
 
     printf("CUIL (XY-NNNNNNNN-Z): ");
     leer_linea(socio.cuil, TAM_CUIL);
