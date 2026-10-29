@@ -16,77 +16,35 @@ Observaciones:  -
 ******************************************************************************/
 void arreglar_apyn_ALU(char *s)
 {
-    if(cadena_vacia(s))return;
+    char temp[TAM_APYN], *dst = temp;
+    const char *src = s;
+    int tiene_coma = (strchr(s, ',') != NULL);
+    int coma_puesta = 0, coma_pend = 0, sep = 0, inicio = 1;
 
-    char temp[TAM_APYN] = {0};
-    char *p_src = s;
-    char *p_dst = temp;
-
-    int coma_puesta = 0;
-    int nueva_palabra = 1;
-
-    while (isspace((unsigned char)*p_src))
+    for (; *src && (dst - temp) < TAM_APYN - 3; src++)   /* hay lugar para ", " + 1 */
     {
-        p_src++;
-    }
-
-    while (*p_src != '\0' && (p_dst - temp) < 59)
-    {
-        if (*p_src == ',')
-        {
-            if (!coma_puesta)
-            {
-                if (p_dst > temp && *(p_dst - 1) == ' ')
-                {
-                    p_dst--;
-                }
-                *p_dst++ = ',';
-                *p_dst++ = ' ';
-                coma_puesta = 1;
-                nueva_palabra = 1;
-            }
-        }
-        else if (isspace((unsigned char)*p_src))
-        {
-            if (!coma_puesta)
-            {
-                if (p_dst > temp && *(p_dst - 1) != ' ')
-                {
-                    *p_dst++ = ',';
-                    *p_dst++ = ' ';
-                    coma_puesta = 1;
-                    nueva_palabra = 1;
-                }
-            }
-            else
-            {
-                if (p_dst > temp && *(p_dst - 1) != ' ')
-                {
-                    *p_dst++ = ' ';
-                    nueva_palabra = 1;
-                }
-            }
-        }
+        if (*src == ',' && !coma_puesta && !coma_pend)
+            coma_pend = 1;
+        else if (*src == ',' || isspace((unsigned char)*src))
+            sep = 1;
         else
         {
-            if (nueva_palabra)
+            if (dst > temp && (sep || coma_pend))
             {
-                *p_dst++ = toupper((unsigned char)*p_src);
-                nueva_palabra = 0;
+                if (coma_pend || (!tiene_coma && !coma_puesta))
+                {
+                    *dst++ = ','; *dst++ = ' '; coma_puesta = 1;
+                }
+                else
+                    *dst++ = ' ';
+                inicio = 1;
             }
-            else
-            {
-                *p_dst++ = tolower((unsigned char)*p_src);
-            }
+            sep = coma_pend = 0;
+            *dst++ = inicio ? toupper((unsigned char)*src) : tolower((unsigned char)*src);
+            inicio = 0;
         }
-        p_src++;
     }
-
-    if (p_dst > temp && isspace((unsigned char)*(p_dst - 1))) p_dst--;
-    if (p_dst > temp && *(p_dst - 1) == ',') p_dst--;
-
-    *p_dst = '\0';
-
+    *dst = '\0';
     copiar_cadena(s, temp, TAM_APYN);
 }
 
