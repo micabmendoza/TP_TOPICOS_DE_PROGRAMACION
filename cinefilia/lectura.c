@@ -189,6 +189,12 @@ Observaciones:  Los rechazos de socios se auditan en errores_socios.txt; los
 ******************************************************************************/
 int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fecha *fecha_proceso)
 {
+    if (!archivo_existe(ARCH_SOCIOS_CSV) || !archivo_existe(ARCH_TITULOS_CSV)) 
+    {
+      puts("Faltan los archivos CSV. No se puede generar.");
+      return ERROR;
+    }
+  
     FILE *fp_socios, *fp_titulos;
     t_socio socio_buffer;
     t_titulo titulo_buffer;
