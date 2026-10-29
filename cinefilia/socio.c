@@ -172,7 +172,7 @@ int valida_socio_ALU(void *reg, const t_contexto *ctx, char *tipo_error)
         return ERROR;
     }
 
-    if (compara_fechas(&socio->fecha_afiliacion, &socio->fecha_nacimiento) < 0 ||
+    if (compara_fechas(&socio->fecha_afiliacion, &socio->fecha_nacimiento) <= 0 ||
         compara_fechas(&socio->fecha_afiliacion, ctx->fecha_proceso) > 0)
     {
         strcpy(tipo_error, "FECHA_AFILIACION");
