@@ -68,6 +68,7 @@ int auditoria_mostrar_ALU(const char *path)
     pf_arch = fopen(path, "rt");
     if (!pf_arch)
     {
+        printf("No hay errores registrados (no existe %s).\n", path);
         /* Retorna OK si el archivo no existe, tal como especifica la consigna */
         return OK;
     }
