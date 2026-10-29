@@ -99,7 +99,12 @@ int leer_archivo_texto_ALU(const char *path_txt, FILE *arch_bin, t_indice *indic
                 reg_ind.id = obtener_clave(reg);
                 reg_ind.nro_reg = nro_reg;
 
-                indice_insertar_ALU(indice, &reg_ind, sizeof(t_reg_indice), compara_reg_indice_ALU);
+                if(indice_insertar_ALU(indice, &reg_ind, sizeof(t_reg_indice), compara_reg_indice_ALU) == ERROR)
+                {
+                    fclose(f_csv);
+                    return ERROR;
+                }
+
 
                 (*aceptados)++;
             }
