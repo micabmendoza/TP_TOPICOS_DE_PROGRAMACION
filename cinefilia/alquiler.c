@@ -86,7 +86,7 @@ int alquilar_ALU(t_indice *ind_socios, t_indice *ind_titulos, const char *path_s
 
     // Lectura y validacion de DNI
     printf("DNI del socio: ");
-    if(scanf("%ld", &dni_ingresado) != 1 || dni_ingresado < DNI_MIN || dni_ingresado > DNI_MAX)
+    if(scanf("%ld", &dni_ingresado) != 1 || dni_ingresado <= DNI_MIN || dni_ingresado >= DNI_MAX)
     {
         puts("Alquiler rechazado: DNI invalido.");
         limpiar_entrada();
