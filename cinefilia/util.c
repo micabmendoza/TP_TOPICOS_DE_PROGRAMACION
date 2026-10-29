@@ -30,7 +30,7 @@ void salir_y_persistir_ALU(t_indice *ind_socios, t_indice *ind_titulos,
     sprintf(path_titulos_backup, "archivos/titulos_%04d%02d%02d.dat",
             fecha_proceso->anio, fecha_proceso->mes, fecha_proceso->dia);
 
-    sprintf(path_matriz_backup, "archivos/matriz_consumo_%04d%02d%02d.dat",
+    sprintf(path_matriz_backup, PREFIJO_MATRIZ "%04d%02d%02d.dat",
             fecha_proceso->anio, fecha_proceso->mes, fecha_proceso->dia);
 
     // Copiamos los archivos binarios
