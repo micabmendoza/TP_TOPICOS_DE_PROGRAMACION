@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "socio.h"
@@ -428,6 +429,7 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     long dni;
     t_reg_indice reg_busc;
     t_socio socio;
+    t_fecha fecha_aux; /* Variable temporal para capturar fechas */
     char tipo_error[TAM_TIPO_ERROR];
     char buffer[TAM_LINEA], buffer_dni[20];
     t_contexto ctx;
@@ -435,7 +437,8 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     int pos_idx;
 
     printf("DNI del socio a modificar: ");
-    scanf("%ld", &dni); limpiar_entrada();
+    scanf("%ld", &dni);
+    limpiar_entrada();
 
     reg_busc.id = dni;
     pos_idx = indice_buscar_ALU(indice, &reg_busc, sizeof(t_reg_indice), compara_reg_indice_ALU);
@@ -453,33 +456,52 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
         return ERROR;
     }
 
+    /* Uso de la función prehecha de la cátedra para el formato tabular */
+    printf("\nDatos actuales:\n");
     socio_mostrar(&socio);
 
     printf("\n(Enter para conservar el valor actual)\n");
 
-    printf("CUIL [%s]: ", socio.cuil);
+    printf("CUIL (XY-NNNNNNNN-Z) [%s]: ", socio.cuil);
     leer_linea(buffer, TAM_LINEA);
-    if (!cadena_vacia(buffer))
-    {
-        copiar_cadena(socio.cuil, buffer, TAM_CUIL);
-    }
+    if (!cadena_vacia(buffer)) copiar_cadena(socio.cuil, buffer, TAM_CUIL);
 
     printf("Apellidos y nombres [%s]: ", socio.apellidos_nombres);
     leer_linea(buffer, TAM_LINEA);
-    if (!cadena_vacia(buffer))
+    if (!cadena_vacia(buffer)) copiar_cadena(socio.apellidos_nombres, buffer, TAM_APYN);
+
+    /* Uso de lee_fecha para manejar nativamente el input o el Enter vacío */
+    printf("Fecha de nacimiento [%02d/%02d/%04d]: ", socio.fecha_nacimiento.dia, socio.fecha_nacimiento.mes, socio.fecha_nacimiento.anio);
+    if (lee_fecha(&fecha_aux) == OK)
     {
-        copiar_cadena(socio.apellidos_nombres, buffer, TAM_APYN);
+        socio.fecha_nacimiento = fecha_aux;
     }
 
-    printf("Plan [%s]: ", socio.plan);
+    printf("Sexo (H/M) [%c]: ", socio.sexo);
     leer_linea(buffer, TAM_LINEA);
+    if (!cadena_vacia(buffer)) socio.sexo = toupper(buffer[0]);
 
-    if (!cadena_vacia(buffer))
+    printf("Fecha de afiliacion [%02d/%02d/%04d]: ", socio.fecha_afiliacion.dia, socio.fecha_afiliacion.mes, socio.fecha_afiliacion.anio);
+    if (lee_fecha(&fecha_aux) == OK)
     {
-        copiar_cadena(socio.plan, buffer, TAM_PLAN);
+        socio.fecha_afiliacion = fecha_aux;
     }
 
-    printf("Email tutor [%s]: ", socio.email_tutor);
+    printf("Categoria (MENOR/ADULTO) [%s]: ", socio.categoria);
+    leer_linea(buffer, TAM_LINEA);
+    if (!cadena_vacia(buffer)) copiar_cadena(socio.categoria, buffer, TAM_CATEGORIA);
+
+    printf("Fecha de ultima cuota paga [%02d/%02d/%04d]: ", socio.fecha_ultima_cuota.dia, socio.fecha_ultima_cuota.mes, socio.fecha_ultima_cuota.anio);
+    if (lee_fecha(&fecha_aux) == OK)
+    {
+        socio.fecha_ultima_cuota = fecha_aux;
+    }
+
+    printf("Plan (BASIC/PREMIUM/VIP/FAMILY) [%s]: ", socio.plan);
+    leer_linea(buffer, TAM_LINEA);
+    if (!cadena_vacia(buffer)) copiar_cadena(socio.plan, buffer, TAM_PLAN);
+
+    printf("Email tutor (vacio si ADULTO, '-' para borrar) [%s]: ", socio.email_tutor);
     leer_linea(buffer, TAM_LINEA);
     if (!cadena_vacia(buffer))
     {
@@ -494,7 +516,7 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
 
     if (valida_socio_ALU(&socio, &ctx, tipo_error) != OK)
     {
-        printf("Modificacion RECHAZADA. Validacion fallida: %s\n", tipo_error);
+        printf("\nModificacion RECHAZADA. Validacion fallida: %s\n", tipo_error);
         sprintf(buffer_dni, "%ld", socio.dni);
         auditoria_registrar_ALU(ARCH_ERRORES, buffer_dni, tipo_error, fecha_proceso);
         fclose(arch);
@@ -503,7 +525,8 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
 
     socio_escribir_ALU(arch, reg_busc.nro_reg, &socio);
     fclose(arch);
-    printf("Socio modificado.\n");
+
+    printf("\nSocio modificado.\n");
     return OK;
 }
 
