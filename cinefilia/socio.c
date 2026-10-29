@@ -541,14 +541,21 @@ Observaciones:  -
 ******************************************************************************/
 int socio_baja_ALU(t_indice *indice, const char *path)
 {
-        long dni;
+    long dni;
     t_reg_indice reg_busc;
     t_socio socio;
     FILE *arch;
+    char buffer[TAM_LINEA];
 
     printf("Datos del socio con DNI que sera dado de baja: ");
-    scanf("%ld", &dni);
-    limpiar_entrada();
+    leer_linea(buffer, sizeof(buffer));
+
+    // Si ingresa un Enter vacio o texto, se rechaza
+    if (cadena_vacia(buffer) || sscanf(buffer, "%ld", &dni) != 1)
+    {
+        printf("DNI invalido.\n");
+        return ERROR;
+    }
 
     reg_busc.id = dni;
 
