@@ -694,31 +694,30 @@ Observaciones:  -
 ******************************************************************************/
 void abm_socio_ALU(t_indice *indice, const t_fecha *fecha_proceso)
 {
-    char opc = '\0';
+    char opc;
+
+    // No se limpia la pantalla para conservar el menu principal visible
+
     const char OPCIONES_ABM[][LENGTH_MENU] =
     {
-        "12",
+        "AMV",
         "Alta",
-        "Modificacion"
+        "Modificacion",
+        "Volver"
     };
 
-    while (opc != 'S' && opc != 's')
-    {
-        LIMPIAR_PANTALLA();
-        opc = opcion(OPCIONES_ABM, "Alta / Modificacion de socio", "Ingrese opcion (S para salir): ");
+    // Se delega el formateo y la validacion de entrada a la funcion de la catedra
+    printf("\n");
+    opc = opcion(OPCIONES_ABM, "Alta / Modificacion de socio", "Ingrese opcion: ");
 
-        if (opc == '1')
-        {
-            socio_alta_manual_ALU(indice, ARCH_SOCIOS_BIN, fecha_proceso);
-            PAUSA();
-        }
-        else
-        {
-            if (opc == '2')
-            {
-                socio_modificacion_manual_ALU(indice, ARCH_SOCIOS_BIN, fecha_proceso);
-                PAUSA();
-            }
-        }
+    if (opc == 'A')
+    {
+        socio_alta_manual_ALU(indice, ARCH_SOCIOS_BIN, fecha_proceso);
     }
+    else if (opc == 'M')
+    {
+        socio_modificacion_manual_ALU(indice, ARCH_SOCIOS_BIN, fecha_proceso);
+    }
+
+    // Si es 'V' o invalida, retorna y el main se encarga de pausar y limpiar
 }
