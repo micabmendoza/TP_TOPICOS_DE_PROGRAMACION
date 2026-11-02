@@ -3,6 +3,9 @@
 
 /* Reglas de negocio puras: no dependen del indice ni de los archivos */
 
+/* ---- DNI ---- */
+#define DIGITOS_DNI 8
+
 /* ---- CUIL (Anexo A.1) ---- */
 #define TAM_CUIL 14      /* "XY-NNNNNNNN-Z" + '\0' */
 #define PREFIJO_HOMBRE 20
@@ -23,5 +26,7 @@ int email_valido(const char *);
 
 void calcular_cuil_ALU(long dni, char sexo, char *dest);
 int email_valido_ALU(const char *email);
+// funcion auxiliar
+void insertar_dni_en_cuil_aux(long nro_dni, char *dest);
 
 #endif /* VALIDACIONES_H_INCLUDED */

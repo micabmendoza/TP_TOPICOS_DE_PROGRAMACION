@@ -20,8 +20,39 @@ Observaciones:  -
 ******************************************************************************/
 void pedir_fecha_proceso_ALU(t_fecha *fecha_proceso)
 {
-    /* TODO: reemplazar esta llamada a la funcion de la catedra por su propia
-       implementacion. En la entrega no puede quedar ninguna llamada a una
-       funcion de la biblioteca que tenga version _ALU. */
-    pedir_fecha_proceso(fecha_proceso);
+    int fecha_valida = ERROR, resultado_valido;
+
+    while(fecha_valida == ERROR)
+    {
+        printf("Ingrese fecha de proceso (dd/mm/aaaa) [Enter = fecha actual]: ");
+        resultado_valido = lee_fecha(fecha_proceso);
+
+        if(resultado_valido == FECHA_VACIA)
+        {
+            fecha_actual(fecha_proceso);
+            fecha_valida = OK;
+        }
+        else
+        {
+            if(resultado_valido == OK)
+            {
+                resultado_valido = fecha_correcta(fecha_proceso);
+                if(resultado_valido == OK)
+                {
+                    fecha_valida = OK;
+                }
+                else
+                {
+                    printf("\nFECHA FORMALMENTE INCORRECTA");
+                    fecha_valida = ERROR;
+                }
+            }
+            else
+            {
+                printf("\nFECHA FORMALMENTE INCORRECTA");
+                fecha_valida = ERROR;
+            }
+            printf("\n");
+        }
+    }
 }
