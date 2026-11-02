@@ -392,7 +392,8 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
     setear_fecha_invalida(buffer, &socio.fecha_nacimiento);
 
     printf("Sexo (H/M): ");
-    leer_linea(buffer, TAM_LINEA); socio.sexo = buffer[0];
+    leer_linea(buffer, TAM_LINEA);
+    socio.sexo = (strlen(buffer) == 1) ? buffer[0] : '?';
 
     printf("Fecha de afiliacion (DD/MM/AAAA): ");
     leer_linea(buffer, TAM_LINEA);
@@ -540,7 +541,8 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
 
     printf("Sexo (H/M) [%c]: ", socio.sexo);
     leer_linea(buffer, TAM_LINEA);
-    if (!cadena_vacia(buffer)) socio.sexo = toupper(buffer[0]);
+    if (!cadena_vacia(buffer)) 
+        socio.sexo = (strlen(buffer) == 1) ? buffer[0] : '?';
 
     printf("Fecha de afiliacion [%02d/%02d/%04d]: ", socio.fecha_afiliacion.dia, socio.fecha_afiliacion.mes, socio.fecha_afiliacion.anio);
 
