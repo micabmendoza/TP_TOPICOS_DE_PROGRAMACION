@@ -106,14 +106,8 @@ int texto_a_socio_ALU(const char *linea, void *reg)
 
     setear_fecha_invalida(campos[3], &socio->fecha_nacimiento);
 
-    if (cadena_vacia(campos[4]))
-    {
-        socio->sexo = '?';
-    }
-    else
-    {
-        socio->sexo = campos[4][0];
-    }
+    // No dejamos pasar por ejemplo 'HX' como 'H', sino que sale inválido, y cubre caso vacío
+    socio->sexo = (strlen(campos[4]) == 1) ? campos[4][0] : '?';
 
     setear_fecha_invalida(campos[5], &socio->fecha_afiliacion);
 
