@@ -27,6 +27,36 @@ static void setear_fecha_invalida(const char *txt, t_fecha *f)
         f->dia = f->mes = f->anio = 0;
 }
 
+/// Función auxiliar para Corrección 3
+static int texto_a_dni(const char *txt, long *dni)
+{
+    char *fin;
+
+    // strtol convierte el texto en un long con base decimal, y lo guarda en socio.dni
+    // El puntero fin queda apuntando a lo último que leyó distinto de un número (\0, \n, una letra, etc.)
+    *dni = strtol(txt, &fin, 10);
+
+    // Caso donde el usuario no ingresa nada
+    if (fin == txt)
+    {
+        *dni = 0;
+        return ERROR;
+    }
+
+    // Limpiamos posibles espacios invisibles o saltos de línea que deje la consola
+    while (isspace((unsigned char)*fin))
+        fin++;
+
+    // Caso donde se ingresan caracteres inválidos
+    if (*fin != '\0')
+    {
+        *dni = 0;
+        return ERROR;
+    }
+
+    return OK;
+}
+
 /*============================================================================*/
 /*            FUNCIONES A IMPLEMENTAR POR EL ALUMNO (version _ALU)             */
 /*============================================================================*/
@@ -353,7 +383,6 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
     t_socio socio;
     char tipo_error[TAM_TIPO_ERROR];
     char buffer[TAM_LINEA], buffer_dni[TAM_LINEA];
-    char *fin;
     t_contexto ctx;
     t_reg_indice nuevo_reg;
     FILE *arch;
@@ -367,15 +396,7 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
     printf("DNI: ");
     leer_linea(buffer_dni, sizeof(buffer_dni));
 
-    // Agregamos esta línea que convierte el texto buffer_dni en un long con base decimal, y lo guarda en socio.dni
-    // El puntero fin queda apuntando a lo último que leyó distinto de un número (\0, \n, una letra, etc.)
-    socio.dni = strtol(buffer_dni, &fin, 10);
-
-    // Limpiamos posibles espacios invisibles o saltos de linea que deje la consola
-    while(isspace((unsigned char)*fin)) fin++;
-
-    if (cadena_vacia(buffer_dni) || *fin != '\0') // Si *fin != '\0' se introdujeron caracteres distintos de numeros
-        socio.dni = 0;
+    texto_a_dni(buffer_dni, &socio.dni);
 
     printf("CUIL (XY-NNNNNNNN-Z): ");
     leer_linea(buffer, sizeof(buffer));
@@ -489,7 +510,7 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     printf("DNI del socio a modificar: ");
     leer_linea(buffer_dni, sizeof(buffer_dni));
 
-    if (cadena_vacia(buffer_dni) || sscanf(buffer_dni, "%ld", &dni) != 1)
+    if (texto_a_dni(buffer_dni, &dni) != OK)
     {
         puts("DNI invalido.");
         return ERROR;
@@ -616,7 +637,7 @@ int socio_baja_ALU(t_indice *indice, const char *path)
     leer_linea(buffer, sizeof(buffer));
 
     // Si ingresa un Enter vacio o texto, se rechaza
-    if (cadena_vacia(buffer) || sscanf(buffer, "%ld", &dni) != 1)
+    if (texto_a_dni(buffer, &dni) != OK)
     {
         printf("DNI invalido.\n");
         return ERROR;
