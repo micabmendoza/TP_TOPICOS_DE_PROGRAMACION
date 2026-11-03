@@ -480,7 +480,6 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     long dni;
     t_reg_indice reg_busc;
     t_socio socio;
-    t_fecha fecha_aux; /* Variable temporal para capturar fechas */
     char tipo_error[TAM_TIPO_ERROR];
     char buffer[TAM_LINEA], buffer_dni[TAM_LINEA];
     t_contexto ctx;
