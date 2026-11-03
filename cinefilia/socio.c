@@ -12,7 +12,7 @@
 #define MARCADOR_CUIL "X"
 
 /// Función auxiliar para Corrección 1
-void copiar_o_invalidar(char *dest, const char *orig, size_t tam, const char *marcador)
+static void copiar_o_invalidar(char *dest, const char *orig, size_t tam, const char *marcador)
 {
     if(strlen(orig) >= tam)
         strcpy(dest, marcador); // El marcador debe medir < tam
@@ -21,7 +21,7 @@ void copiar_o_invalidar(char *dest, const char *orig, size_t tam, const char *ma
 }
 
 /// Función auxiliar para Corrección 2
-void setear_fecha_invalida(const char *txt, t_fecha *f)
+static void setear_fecha_invalida(const char *txt, t_fecha *f)
 {
     if(texto_a_fecha(txt, f) != OK)
         f->dia = f->mes = f->anio = 0;
