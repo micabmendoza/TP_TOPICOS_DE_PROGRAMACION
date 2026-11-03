@@ -511,7 +511,6 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
         return ERROR;
     }
 
-    /* Uso de la función prehecha de la cátedra para el formato tabular */
     printf("\nDatos actuales:\n");
     socio_mostrar(&socio);
 
@@ -529,7 +528,6 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     leer_linea(buffer, TAM_LINEA);
     if (!cadena_vacia(buffer)) copiar_cadena(socio.apellidos_nombres, buffer, TAM_APYN);
 
-    /* Uso de lee_fecha para manejar nativamente el input o el Enter vacío */
     printf("Fecha de nacimiento [%02d/%02d/%04d]: ", socio.fecha_nacimiento.dia, socio.fecha_nacimiento.mes, socio.fecha_nacimiento.anio);
 
     /// Corrección 2
