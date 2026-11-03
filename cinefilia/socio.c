@@ -93,10 +93,7 @@ int texto_a_socio_ALU(const char *linea, void *reg)
         return ERROR;
     }
 
-    if (sscanf(campos[0], "%ld", &socio->dni) != 1)
-    {
-        socio->dni = 0;
-    }
+    texto_a_dni(campos[0], &socio->dni); 
 
     /** Corrección 1 **/
     // Antes de copiar, se valida la longitud del CUIL, si es inválida se fuerza formato inválido. De otra forma copiar_cadena lo recorta antes de saber si la length era válida
