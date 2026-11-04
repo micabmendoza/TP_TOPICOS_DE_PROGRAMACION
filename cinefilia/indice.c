@@ -16,6 +16,41 @@ Parametros:     indice: TDA indice.
 Retorno:        OK si la operacion fue exitosa y ERROR en caso contrario.
 Observaciones:  -
 ******************************************************************************/
+// MEJORA Nº 1
+// Función auxiliar de búsqueda binaria para indice_buscar_ALU e indice_insertar_ALU
+// Antes hacíamos búsquedas lineales
+static int busqueda_binaria_indice(const t_indice *indice, const void *clave, size_t tamanyo,
+                                   int (*cmp)(const void *, const void *), unsigned *pos_ubicacion)
+{
+    int izq = 0;
+    int der = (int)indice->cantidad_elementos_actual - 1;
+    int medio;
+
+    while (izq <= der)
+    {
+        medio = izq + (der - izq) / 2;
+        const char *p_medio = (const char *)indice->vindice + ((size_t)medio * tamanyo);
+        int res = cmp(p_medio, clave);
+
+        if (res == 0)
+        {
+            *pos_ubicacion = (unsigned)medio;
+            return OK;
+        }
+        else if (res < 0)
+        {
+            izq = medio + 1;
+        }
+        else
+        {
+            der = medio - 1;
+        }
+    }
+
+    *pos_ubicacion = (unsigned)izq;
+    return NO_EXISTE;
+}
+
 int indice_crear_ALU(t_indice *indice, size_t nmemb, size_t tamanyo)
 {
     indice->vindice = malloc(nmemb * tamanyo);
@@ -77,9 +112,9 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
                         int (*cmp)(const void *, const void *))
 {
     char *p_inicio = (char *)indice->vindice;
-    char *p_actual;
     char *p_hueco;
     size_t bytes_a_mover;
+    unsigned pos_insercion;
 
     // Verifico si el vector esta lleno
     if(indice_lleno_ALU(indice) == OK)
@@ -100,37 +135,16 @@ int indice_insertar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
         return OK;
     }
 
-    // Apunto al ultimo elemento del vector
-    p_actual = p_inicio + ((indice->cantidad_elementos_actual - 1) * tamanyo);
+    // MEJORA Nº 1
+    // Búsqueda binaria que detecta duplicado o determina la posición de inserción exacta
+    // Antes hacíamos búsqueda lineal para saber posición y verificábamos por duplicado
 
-    // Fase 1: Buscar la posicion SIN desplazar nada
-    while (1) 
+    // Fase 1: Buscamos posición de inserción o bien detectamos duplicado
+    if (busqueda_binaria_indice(indice, registro, tamanyo, cmp, &pos_insercion) == OK)
     {
-        int res_cmp = cmp(p_actual, registro);
-        
-        // Si encontramos el duplicado, abortamos y la memoria queda intacta
-        if (res_cmp == 0) 
-        {
-            return ERROR; 
-        }
-        
-        // Si el elemento actual es menor, el registro va a su derecha
-        if (res_cmp < 0) 
-        {
-            p_hueco = p_actual + tamanyo;
-            break;
-        }
-        
-        // Si llegamos al principio y sigue siendo mayor, el registro va primero
-        // Esto evita restar p_actual por debajo de p_inicio 
-        if (p_actual == p_inicio) 
-        {
-            p_hueco = p_inicio;
-            break;
-        }
-        
-        p_actual -= tamanyo; 
+        return ERROR;
     }
+    p_hueco = p_inicio + (pos_insercion * tamanyo);
 
     // Fase 2: Hacer el hueco moviendo todo el bloque de una sola vez con memmove
     bytes_a_mover = (p_inicio + (indice->cantidad_elementos_actual * tamanyo)) - p_hueco;
@@ -206,24 +220,21 @@ int indice_buscar_ALU(const t_indice *indice, void *registro, size_t tamanyo,
                       int (*cmp)(const void *, const void *))
 {
     char *p_inicio = (char *)indice->vindice;
-    char *p_actual = p_inicio;
-    char *p_limite = p_inicio + (indice->cantidad_elementos_actual * tamanyo); // Puntero al final del arreglo
-    int res_cmp;
+    char *p_actual;
+    unsigned pos;
 
     // Busqueda del elemento
-    while (p_actual < p_limite && (res_cmp = cmp(p_actual, registro)) < 0)
-    {
-        p_actual += tamanyo;
-    }
-
-    // Verifico si la clave no existe o me sali del limite
-    if (p_actual >= p_limite || res_cmp != 0)
+    // MEJORA Nº 1
+    // Búsqueda binaria sobre el arreglo ordenado  (porque es índice)
+    // Antes hacíamos búsqueda lineal
+    if (busqueda_binaria_indice(indice, registro, tamanyo, cmp, &pos) == NO_EXISTE)
     {
         return NO_EXISTE;
     }
 
-    memcpy(registro,p_actual, tamanyo);
-    return ((p_actual - p_inicio)/tamanyo);
+    p_actual = p_inicio + (pos * tamanyo);
+    memcpy(registro, p_actual, tamanyo);
+    return (int)pos;
 }
 
 /******************************************************************************
@@ -317,8 +328,9 @@ int indice_cargar_ALU(const char *path, t_indice *indice, size_t tamanyo_reg,
         return ERROR;
     }
 
-    fread(buffer, tamanyo_reg, 1, pf);
-    while (!feof(pf))
+    // MEJORA Nº 2
+    // Control de ciclo directo con el retorno de fread (while (fread(...) == 1)) eliminando fread afuera y luego while(!feof...)
+    while (fread(buffer, tamanyo_reg, 1, pf) == 1)
     {
         if (es_activo(buffer))
         {
@@ -335,7 +347,6 @@ int indice_cargar_ALU(const char *path, t_indice *indice, size_t tamanyo_reg,
         }
 
         pos++;
-        fread(buffer, tamanyo_reg, 1, pf);
     }
 
     // Se liberan los recursos
