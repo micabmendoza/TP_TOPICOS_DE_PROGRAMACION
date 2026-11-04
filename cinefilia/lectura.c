@@ -94,7 +94,13 @@ int leer_archivo_texto_ALU(const char *path_txt, FILE *arch_bin, t_indice *indic
                 fseek(arch_bin, 0, SEEK_END);
                 nro_reg = (unsigned)(ftell(arch_bin) / tamanyo);
 
-                fwrite(reg, tamanyo, 1, arch_bin);
+                // MEJORA Nº 3
+                // Control de retorno de fwrite
+                if(fwrite(reg, tamanyo, 1, arch_bin) != 1)
+                {
+                    fclose(f_csv);
+                    return ERROR;
+                }
 
                 reg_ind.id = obtener_clave(reg);
                 reg_ind.nro_reg = nro_reg;
@@ -104,7 +110,6 @@ int leer_archivo_texto_ALU(const char *path_txt, FILE *arch_bin, t_indice *indic
                     fclose(f_csv);
                     return ERROR;
                 }
-
 
                 (*aceptados)++;
             }
@@ -189,12 +194,12 @@ Observaciones:  Los rechazos de socios se auditan en errores_socios.txt; los
 ******************************************************************************/
 int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fecha *fecha_proceso)
 {
-    if (!archivo_existe(ARCH_SOCIOS_CSV) || !archivo_existe(ARCH_TITULOS_CSV)) 
+    if (!archivo_existe(ARCH_SOCIOS_CSV) || !archivo_existe(ARCH_TITULOS_CSV))
     {
       puts("Faltan los archivos CSV. No se puede generar.");
       return ERROR;
     }
-  
+
     FILE *fp_socios, *fp_titulos;
     t_socio socio_buffer;
     t_titulo titulo_buffer;
@@ -206,18 +211,22 @@ int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fe
     indice_vaciar_ALU(ind_titulos);
 
     // Se sobreescriben los archivos
-    fp_socios = fopen(ARCH_SOCIOS_BIN, "w+b");
+    // MEJORA Nº 6
+    // Antes fp_socios y fp_titulos se abrían directamente con "w+b" truncando socios.dat y titulos.dat antes de saber si la lectura funcionará
+    // Fue corregido creando archivos temporales (.tmp) y reemplazando al final únicamente si ambas lecturas de CSV salen bien
+    fp_socios = fopen(DIR_ARCHIVOS "socios.tmp", "w+b");
     if(fp_socios == NULL)
     {
-        puts("Error al crear el archivo binario de socios.\n");
+        puts("Error al crear el archivo binario temporal de socios.\n");
         return ERROR;
     }
 
-    fp_titulos = fopen(ARCH_TITULOS_BIN, "w+b");
+    fp_titulos = fopen(DIR_ARCHIVOS "titulos.tmp", "w+b");
     if(fp_titulos == NULL)
     {
         fclose(fp_socios);
-        puts("Error al crear el archivo binario de titulos.\n");
+        remove(DIR_ARCHIVOS "socios.tmp");
+        puts("Error al crear el archivo binario temporal de titulos.\n");
         return ERROR;
     }
 
@@ -237,6 +246,8 @@ int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fe
     {
         fclose(fp_socios);
         fclose(fp_titulos);
+        remove(DIR_ARCHIVOS "socios.tmp");
+        remove(DIR_ARCHIVOS "titulos.tmp");
         return ERROR;
     }
 
@@ -255,12 +266,20 @@ int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fe
     {
         fclose(fp_socios);
         fclose(fp_titulos);
+        remove(DIR_ARCHIVOS "socios.tmp");
+        remove(DIR_ARCHIVOS "titulos.tmp");
         return ERROR;
     }
 
     // Cerramos los archivos binarios ya cargados
     fclose(fp_socios);
     fclose(fp_titulos);
+
+    // Reemplazamos los archivos temporales por los verdaderos
+    remove(ARCH_SOCIOS_BIN);
+    rename(DIR_ARCHIVOS "socios.tmp", ARCH_SOCIOS_BIN);
+    remove(ARCH_TITULOS_BIN);
+    rename(DIR_ARCHIVOS "titulos.tmp", ARCH_TITULOS_BIN);
 
     // Reconstruimos los indices
     if(cargar_indices_ALU(ind_socios, ind_titulos) == ERROR)
@@ -275,3 +294,4 @@ int generar_binarios_ALU(t_indice *ind_socios, t_indice *ind_titulos, const t_fe
 
     return OK;
 }
+
