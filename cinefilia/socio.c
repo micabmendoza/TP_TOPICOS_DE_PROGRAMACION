@@ -779,13 +779,14 @@ int socios_exportar_ALU(const t_indice *indice, const char *path, const char *pa
     unsigned i, exportados = 0;
 
     source = fopen(path, "rb");
-    target = fopen(path_export, "wb");
-
+    
     if(source == NULL)
     {
         printf("Error al abrir el archivo\n");
         return ERROR;
     }
+
+    target = fopen(path_export, "wb");
 
     if(target == NULL)
     {
