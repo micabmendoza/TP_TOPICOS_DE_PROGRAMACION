@@ -3,19 +3,7 @@
 #include <string.h>
 #include "indice.h"
 
-/*============================================================================*/
-/*            FUNCIONES A IMPLEMENTAR POR EL ALUMNO (version _ALU)             */
-/*============================================================================*/
-
-/******************************************************************************
-Descripcion:    toma memoria para nmemb elementos e inicializa la estructura
-                vacia.
-Parametros:     indice: TDA indice.
-                nmemb: cantidad inicial de elementos (CANTIDAD_ELEMENTOS).
-                tamanyo: espacio en bytes ocupado por cada elemento.
-Retorno:        OK si la operacion fue exitosa y ERROR en caso contrario.
-Observaciones:  -
-******************************************************************************/
+/// Función auxiliar extra
 // MEJORA Nº 1
 // Función auxiliar de búsqueda binaria para indice_buscar_ALU e indice_insertar_ALU
 // Antes hacíamos búsquedas lineales
@@ -51,6 +39,19 @@ static int busqueda_binaria_indice(const t_indice *indice, const void *clave, si
     return NO_EXISTE;
 }
 
+/*============================================================================*/
+/*            FUNCIONES A IMPLEMENTAR POR EL ALUMNO (version _ALU)             */
+/*============================================================================*/
+
+/******************************************************************************
+Descripcion:    toma memoria para nmemb elementos e inicializa la estructura
+                vacia.
+Parametros:     indice: TDA indice.
+                nmemb: cantidad inicial de elementos (CANTIDAD_ELEMENTOS).
+                tamanyo: espacio en bytes ocupado por cada elemento.
+Retorno:        OK si la operacion fue exitosa y ERROR en caso contrario.
+Observaciones:  -
+******************************************************************************/
 int indice_crear_ALU(t_indice *indice, size_t nmemb, size_t tamanyo)
 {
     indice->vindice = malloc(nmemb * tamanyo);
