@@ -173,34 +173,18 @@ Observaciones:  -
 int indice_eliminar_ALU(t_indice *indice, const void *registro, size_t tamanyo,
                         int (*cmp)(const void *, const void *))
 {
-    char *p_inicio = (char *)indice->vindice;
-    char *p_limite = p_inicio + (indice->cantidad_elementos_actual * tamanyo); // Puntero al final del arreglo
-    char *p_actual;
-    char *p_siguiente;
-    int pos;
+    unsigned pos;
+    char *base;
 
-    //Valido que el vector no este vacio
-    if (indice_vacio_ALU(indice) == OK)
-    {
+    if (!indice || !registro || !cmp || indice->cantidad_elementos_actual == 0)
         return ERROR;
-    }
 
-    pos = indice_buscar_ALU(indice, (void *)registro, tamanyo, cmp);
-    if ( pos == NO_EXISTE)
-    {
+    if (busqueda_binaria_indice(indice, registro, tamanyo, cmp, &pos) == NO_EXISTE)
         return ERROR;
-    }
-    p_actual = (p_inicio + (pos * tamanyo));
-    p_siguiente = p_actual + tamanyo;
-    while (p_siguiente < p_limite)
-    {
-        memcpy(p_actual, p_siguiente, tamanyo);
-        p_actual += tamanyo;
-        p_siguiente += tamanyo;
-    }
 
+    base = (char *)indice->vindice;
+    memmove(base + pos * tamanyo, base + (pos + 1) * tamanyo, (indice->cantidad_elementos_actual - pos - 1) * tamanyo);
     indice->cantidad_elementos_actual--;
-
     return OK;
 }
 
