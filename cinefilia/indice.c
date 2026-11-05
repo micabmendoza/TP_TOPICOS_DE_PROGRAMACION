@@ -324,7 +324,7 @@ int indice_cargar_ALU(const char *path, t_indice *indice, size_t tamanyo_reg,
 
             if (!indice_insertar_ALU(indice, &reg_indice, sizeof(t_reg_indice), cmp))
             {
-                indice_destruir_ALU(indice);
+                indice_vaciar_ALU(indice);
                 free(buffer);
                 fclose(pf);
                 return ERROR;
