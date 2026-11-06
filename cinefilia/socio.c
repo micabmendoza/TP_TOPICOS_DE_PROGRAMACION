@@ -8,6 +8,58 @@
 #include "config.h"
 #include "menu.h"
 
+#define MARCADOR_EMAIL "@"
+#define MARCADOR_CUIL "X"
+
+/// Función auxiliar para Corrección 1
+// Email y CUIL ya no se recortan antes de validar
+static void copiar_o_invalidar(char *dest, const char *orig, size_t tam, const char *marcador)
+{
+    if(strlen(orig) >= tam)
+        strcpy(dest, marcador); // El marcador debe medir < tam
+    else
+        strcpy(dest, orig);
+}
+
+/// Función auxiliar para Corrección 2
+// Agregamos que es fecha inválida, si texto_a_fecha falla o además si la fecha es calendario inválido
+static void setear_fecha_invalida(const char *txt, t_fecha *f)
+{
+    if(texto_a_fecha(txt, f) != OK)
+        f->dia = f->mes = f->anio = 0;
+}
+
+/// Función auxiliar para Corrección 3
+// Ahora el DNI se audita como se escribió
+static int texto_a_dni(const char *txt, long *dni)
+{
+    char *fin;
+
+    // strtol convierte el texto en un long con base decimal, y lo guarda en socio.dni
+    // El puntero fin queda apuntando a lo último que leyó distinto de un número (\0, \n, una letra, etc.)
+    *dni = strtol(txt, &fin, 10);
+
+    // Caso donde el usuario no ingresa nada
+    if (fin == txt)
+    {
+        *dni = 0;
+        return ERROR;
+    }
+
+    // Limpiamos posibles espacios invisibles o saltos de línea que deje la consola
+    while (isspace((unsigned char)*fin))
+        fin++;
+
+    // Caso donde se ingresan caracteres inválidos
+    if (*fin != '\0')
+    {
+        *dni = 0;
+        return ERROR;
+    }
+
+    return OK;
+}
+
 /*============================================================================*/
 /*            FUNCIONES A IMPLEMENTAR POR EL ALUMNO (version _ALU)             */
 /*============================================================================*/
@@ -44,52 +96,32 @@ int texto_a_socio_ALU(const char *linea, void *reg)
         return ERROR;
     }
 
-    if (sscanf(campos[0], "%ld", &socio->dni) != 1)
-    {
-        socio->dni = 0;
-    }
+    texto_a_dni(campos[0], &socio->dni);
 
-    copiar_cadena(socio->cuil, campos[1], TAM_CUIL);
+    // CORRECCION Nº 1
+    // Antes de copiar, se valida la longitud del CUIL, si es inválida se fuerza formato inválido. De otra forma copiar_cadena lo recorta antes de saber si la length era válida
+    copiar_o_invalidar(socio->cuil, campos[1], TAM_CUIL, MARCADOR_CUIL);
 
     copiar_cadena(socio->apellidos_nombres, campos[2], TAM_APYN);
 
-    if (texto_a_fecha(campos[3], &socio->fecha_nacimiento) != OK)
-    {
-        socio->fecha_nacimiento.dia = 0;
-        socio->fecha_nacimiento.mes = 0;
-        socio->fecha_nacimiento.anio = 0;
-    }
+    setear_fecha_invalida(campos[3], &socio->fecha_nacimiento);
 
-    if (cadena_vacia(campos[4]))
-    {
-        socio->sexo = '?';
-    }
-    else
-    {
-        socio->sexo = campos[4][0];
-    }
+    // No dejamos pasar por ejemplo 'HX' como 'H', sino que sale inválido, y cubre caso vacío
+    socio->sexo = (strlen(campos[4]) == 1) ? campos[4][0] : '?';
 
-    if (texto_a_fecha(campos[5], &socio->fecha_afiliacion) != OK)
-    {
-        socio->fecha_afiliacion.dia = 0;
-        socio->fecha_afiliacion.mes = 0;
-        socio->fecha_afiliacion.anio = 0;
-    }
+    setear_fecha_invalida(campos[5], &socio->fecha_afiliacion);
 
     copiar_cadena(socio->categoria, campos[6], TAM_CATEGORIA);
 
-    if (texto_a_fecha(campos[7], &socio->fecha_ultima_cuota) != OK)
-    {
-        socio->fecha_ultima_cuota.dia = 0;
-        socio->fecha_ultima_cuota.mes = 0;
-        socio->fecha_ultima_cuota.anio = 0;
-    }
+    setear_fecha_invalida(campos[7], &socio->fecha_ultima_cuota);
 
     socio->estado = 'A';
 
     copiar_cadena(socio->plan, campos[8], TAM_PLAN);
 
-    copiar_cadena(socio->email_tutor, campos[9], TAM_EMAIL);
+    // CORRECCION Nº 1
+    // Antes de copiar, se valida la longitud del email, si es inválida se fuerza formato inválido. De otra forma copiar_cadena lo recorta antes de saber si la length era válida
+    copiar_o_invalidar(socio->email_tutor, campos[9], TAM_EMAIL, MARCADOR_EMAIL);
 
     return OK;
 }
@@ -305,7 +337,7 @@ Observaciones:  -
 ******************************************************************************/
 int cuota_al_dia_ALU(const t_fecha *ultima_cuota, const t_fecha *fecha_proceso)
 {
-        int mes_ant, anio_ant;
+    int mes_ant, anio_ant;
 
     if (ultima_cuota->anio == fecha_proceso->anio && ultima_cuota->mes == fecha_proceso->mes)
     {
@@ -344,52 +376,81 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
 {
     t_socio socio;
     char tipo_error[TAM_TIPO_ERROR];
-    char buffer[TAM_LINEA], buffer_dni[20];
+    char buffer[TAM_LINEA], buffer_dni[TAM_LINEA];
     t_contexto ctx;
     t_reg_indice nuevo_reg;
     FILE *arch;
     long pos;
 
+    // Limpiamos toda la estructura con 0s para eliminar posible padding
+    memset(&socio, 0, sizeof(t_socio));
+
+    // CORRECCION Nº 3
+    // Se lee el DNI como texto original para auditarlo como vino si falla, guardandolo en buffer_dni
     printf("DNI: ");
     leer_linea(buffer_dni, sizeof(buffer_dni));
 
-    if (sscanf(buffer_dni, "%ld", &socio.dni) != 1)
-    {
-        socio.dni = 0;
-    }
+    texto_a_dni(buffer_dni, &socio.dni);
 
     printf("CUIL (XY-NNNNNNNN-Z): ");
-    leer_linea(socio.cuil, TAM_CUIL);
+    leer_linea(buffer, sizeof(buffer));
+    // CORRECCION Nº 2
+    copiar_o_invalidar(socio.cuil, buffer, TAM_CUIL, MARCADOR_CUIL);
 
     printf("Apellidos y nombres: ");
     leer_linea(socio.apellidos_nombres, TAM_APYN);
 
+    // CORRECCION Nº 2
+    // Seteamos una fecha inválida si  es necesario
     printf("Fecha de nacimiento (DD/MM/AAAA): ");
-    leer_linea(buffer, TAM_LINEA); texto_a_fecha(buffer, &socio.fecha_nacimiento);
+    leer_linea(buffer, TAM_LINEA);
+    setear_fecha_invalida(buffer, &socio.fecha_nacimiento);
 
     printf("Sexo (H/M): ");
-    leer_linea(buffer, TAM_LINEA); socio.sexo = buffer[0];
+    leer_linea(buffer, TAM_LINEA);
+    socio.sexo = (strlen(buffer) == 1) ? buffer[0] : '?';
 
     printf("Fecha de afiliacion (DD/MM/AAAA): ");
-    leer_linea(buffer, TAM_LINEA); texto_a_fecha(buffer, &socio.fecha_afiliacion);
+    leer_linea(buffer, TAM_LINEA);
+    // CORRECCION Nº 2
+    // Seteamos una fecha inválida si  es necesario
+    setear_fecha_invalida(buffer, &socio.fecha_afiliacion);
 
     printf("Categoria (MENOR/ADULTO): ");
     leer_linea(socio.categoria, TAM_CATEGORIA);
 
     printf("Fecha de ultima cuota paga (DD/MM/AAAA): ");
-    leer_linea(buffer, TAM_LINEA); texto_a_fecha(buffer, &socio.fecha_ultima_cuota);
+    leer_linea(buffer, TAM_LINEA);
+    // CORRECCION Nº 2
+    // Seteamos una fecha inválida si  es necesario
+    setear_fecha_invalida(buffer, &socio.fecha_ultima_cuota);
 
     printf("Plan (BASIC/PREMIUM/VIP/FAMILY): ");
     leer_linea(socio.plan, TAM_PLAN);
 
     printf("Email tutor (vacio si ADULTO, '-' para borrar): ");
-    leer_linea(socio.email_tutor, TAM_EMAIL);
-    if (strcmp(socio.email_tutor, "-") == 0) socio.email_tutor[0] = '\0';
+    leer_linea(buffer, sizeof(buffer));
+    // CORRECCION Nº 1
+    // Uso de copiar_o_invalidar para invalidar si el email supera los 30 caracteres
+    if (strcmp(buffer, "-") == 0)
+        socio.email_tutor[0] = '\0';
+    else
+        copiar_o_invalidar(socio.email_tutor, buffer, TAM_EMAIL, MARCADOR_EMAIL);
 
     socio.estado = 'A';
 
+    // CORRECCION Nº 4
+    // Verificamos que el archivo se abra correctamente
     arch = fopen(path, "r+b");
-    if (!arch) arch = fopen(path, "w+b");
+    if (!arch)
+    {
+        arch = fopen(path, "w+b");
+        if(!arch)
+        {
+            printf("\nError: no se pudo abrir ni crear %s.", path);
+            return ERROR;
+        }
+    }
 
     ctx.indice = indice;
     ctx.arch_bin = arch;
@@ -398,20 +459,33 @@ int socio_alta_manual_ALU(t_indice *indice, const char *path, const t_fecha *fec
     if (valida_socio_ALU(&socio, &ctx, tipo_error) != OK)
     {
         printf("Socio RECHAZADO. Validacion fallida: %s\n", tipo_error);
-        sprintf(buffer_dni, "%ld", socio.dni);
+
+        // CORRECCION Nº 3
+        // Auditamos el DNI como vino ya que se guardó en buffer_dni como se leyó
         auditoria_registrar_ALU(ARCH_ERRORES, buffer_dni, tipo_error, fecha_proceso);
         fclose(arch);
         return ERROR;
     }
 
+    // MEJORA Nº 3
+    // Validamos retorno de socio_escribir_ALU e indice_insertar_ALU
     fseek(arch, 0, SEEK_END);
     pos = ftell(arch) / sizeof(t_socio);
-    socio_escribir_ALU(arch, pos, &socio);
+    if (socio_escribir_ALU(arch, pos, &socio) != OK)
+    {
+        printf("Error al escribir el socio en el archivo binario.\n");
+        fclose(arch);
+        return ERROR;
+    }
     fclose(arch);
 
     nuevo_reg.id = socio.dni;
     nuevo_reg.nro_reg = pos;
-    indice_insertar_ALU(indice, &nuevo_reg, sizeof(t_reg_indice), compara_reg_indice_ALU);
+    if (indice_insertar_ALU(indice, &nuevo_reg, sizeof(t_reg_indice), compara_reg_indice_ALU) != OK)
+    {
+        printf("Error al insertar el nuevo socio en el indice.\n");
+        return ERROR;
+    }
 
     printf("Socio agregado (registro %ld).\n", pos);
     return OK;
@@ -434,9 +508,8 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     long dni;
     t_reg_indice reg_busc;
     t_socio socio;
-    t_fecha fecha_aux; /* Variable temporal para capturar fechas */
     char tipo_error[TAM_TIPO_ERROR];
-    char buffer[TAM_LINEA], buffer_dni[20];
+    char buffer[TAM_LINEA], buffer_dni[TAM_LINEA];
     t_contexto ctx;
     FILE *arch;
     int pos_idx;
@@ -444,7 +517,7 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     printf("DNI del socio a modificar: ");
     leer_linea(buffer_dni, sizeof(buffer_dni));
 
-    if (cadena_vacia(buffer_dni) || sscanf(buffer_dni, "%ld", &dni) != 1)
+    if (texto_a_dni(buffer_dni, &dni) != OK)
     {
         puts("DNI invalido.");
         return ERROR;
@@ -466,7 +539,6 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
         return ERROR;
     }
 
-    /* Uso de la función prehecha de la cátedra para el formato tabular */
     printf("\nDatos actuales:\n");
     socio_mostrar(&socio);
 
@@ -474,38 +546,48 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
 
     printf("CUIL (XY-NNNNNNNN-Z) [%s]: ", socio.cuil);
     leer_linea(buffer, TAM_LINEA);
-    if (!cadena_vacia(buffer)) copiar_cadena(socio.cuil, buffer, TAM_CUIL);
+
+    // CORRECCION Nº 1
+    // Invalidamos el CUIL si se excede antes de recortarlo con copiar_cadena
+    if (!cadena_vacia(buffer))
+        copiar_o_invalidar(socio.cuil, buffer, TAM_CUIL, MARCADOR_CUIL);
 
     printf("Apellidos y nombres [%s]: ", socio.apellidos_nombres);
     leer_linea(buffer, TAM_LINEA);
     if (!cadena_vacia(buffer)) copiar_cadena(socio.apellidos_nombres, buffer, TAM_APYN);
 
-    /* Uso de lee_fecha para manejar nativamente el input o el Enter vacío */
     printf("Fecha de nacimiento [%02d/%02d/%04d]: ", socio.fecha_nacimiento.dia, socio.fecha_nacimiento.mes, socio.fecha_nacimiento.anio);
-    if (lee_fecha(&fecha_aux) == OK)
-    {
-        socio.fecha_nacimiento = fecha_aux;
-    }
+
+    // CORRECCION Nº 2
+    // Corregimos la validación de la fecha, si texto_a_fecha dentro de setear_fecha_invalida devuelve ERROR se rechaza poniendo una fecha invalida para luego auditarse
+    leer_linea(buffer, TAM_LINEA);
+    if (!cadena_vacia(buffer))
+        setear_fecha_invalida(buffer, &socio.fecha_nacimiento);
 
     printf("Sexo (H/M) [%c]: ", socio.sexo);
     leer_linea(buffer, TAM_LINEA);
-    if (!cadena_vacia(buffer)) socio.sexo = toupper(buffer[0]);
+    if (!cadena_vacia(buffer))
+        socio.sexo = (strlen(buffer) == 1) ? buffer[0] : '?';
 
     printf("Fecha de afiliacion [%02d/%02d/%04d]: ", socio.fecha_afiliacion.dia, socio.fecha_afiliacion.mes, socio.fecha_afiliacion.anio);
-    if (lee_fecha(&fecha_aux) == OK)
-    {
-        socio.fecha_afiliacion = fecha_aux;
-    }
+
+    // CORRECCION Nº 2
+    // Corregimos la validación de la fecha, si texto_a_fecha dentro de setear_fecha_invalida devuelve ERROR se rechaza poniendo una fecha invalida para luego auditarse
+    leer_linea(buffer, TAM_LINEA);
+    if(!cadena_vacia(buffer))
+        setear_fecha_invalida(buffer, &socio.fecha_afiliacion);
 
     printf("Categoria (MENOR/ADULTO) [%s]: ", socio.categoria);
     leer_linea(buffer, TAM_LINEA);
     if (!cadena_vacia(buffer)) copiar_cadena(socio.categoria, buffer, TAM_CATEGORIA);
 
     printf("Fecha de ultima cuota paga [%02d/%02d/%04d]: ", socio.fecha_ultima_cuota.dia, socio.fecha_ultima_cuota.mes, socio.fecha_ultima_cuota.anio);
-    if (lee_fecha(&fecha_aux) == OK)
-    {
-        socio.fecha_ultima_cuota = fecha_aux;
-    }
+
+    // CORRECCION Nº 2
+    // Corregimos la validación de la fecha, si texto_a_fecha dentro de setear_fecha_invalida devuelve ERROR se rechaza poniendo una fecha invalida para luego auditarse
+    leer_linea(buffer, TAM_LINEA);
+    if(!cadena_vacia(buffer))
+        setear_fecha_invalida(buffer, &socio.fecha_ultima_cuota);
 
     printf("Plan (BASIC/PREMIUM/VIP/FAMILY) [%s]: ", socio.plan);
     leer_linea(buffer, TAM_LINEA);
@@ -515,8 +597,12 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     leer_linea(buffer, TAM_LINEA);
     if (!cadena_vacia(buffer))
     {
-        if (strcmp(buffer, "-") == 0) socio.email_tutor[0] = '\0';
-        else copiar_cadena(socio.email_tutor, buffer, TAM_EMAIL);
+        // CORRECCION Nº 1
+        // Invalidamos el email si se excede antes de recortarlo con copiar_cadena
+        if (strcmp(buffer, "-") == 0)
+            socio.email_tutor[0] = '\0';
+        else
+            copiar_o_invalidar(socio.email_tutor, buffer, TAM_EMAIL, MARCADOR_EMAIL);
     }
 
     ctx.indice = indice;
@@ -527,13 +613,19 @@ int socio_modificacion_manual_ALU(t_indice *indice, const char *path, const t_fe
     if (valida_socio_ALU(&socio, &ctx, tipo_error) != OK)
     {
         printf("\nModificacion RECHAZADA. Validacion fallida: %s\n", tipo_error);
-        sprintf(buffer_dni, "%ld", socio.dni);
         auditoria_registrar_ALU(ARCH_ERRORES, buffer_dni, tipo_error, fecha_proceso);
         fclose(arch);
         return ERROR;
     }
 
-    socio_escribir_ALU(arch, reg_busc.nro_reg, &socio);
+    // MEJORA Nº 3
+    // Validamos retorno de socio_escribir_ALU
+    if (socio_escribir_ALU(arch, reg_busc.nro_reg, &socio) != OK)
+    {
+        printf("\nError al persistir la modificacion en disco.\n");
+        fclose(arch);
+        return ERROR;
+    }
     fclose(arch);
 
     printf("\nSocio modificado.\n");
@@ -561,7 +653,7 @@ int socio_baja_ALU(t_indice *indice, const char *path)
     leer_linea(buffer, sizeof(buffer));
 
     // Si ingresa un Enter vacio o texto, se rechaza
-    if (cadena_vacia(buffer) || sscanf(buffer, "%ld", &dni) != 1)
+    if (texto_a_dni(buffer, &dni) != OK)
     {
         printf("DNI invalido.\n");
         return ERROR;
@@ -687,13 +779,14 @@ int socios_exportar_ALU(const t_indice *indice, const char *path, const char *pa
     unsigned i, exportados = 0;
 
     source = fopen(path, "rb");
-    target = fopen(path_export, "wb");
-
+    
     if(source == NULL)
     {
         printf("Error al abrir el archivo\n");
         return ERROR;
     }
+
+    target = fopen(path_export, "wb");
 
     if(target == NULL)
     {
@@ -708,12 +801,18 @@ int socios_exportar_ALU(const t_indice *indice, const char *path, const char *pa
     {
         if(socio_leer_ALU(source, arreglo_indice[i].nro_reg, &socio) == OK)
         {
-            if ((strcmp(socio.plan, "PREMIUM") == 0 || strcmp(socio.plan, "VIP") == 0) &&
+            // MEJORA Nº 5
+            // Usamos las macros de PREMIUM y VIP
+            if ((strcmp(socio.plan, PLANES[1]) == 0 || strcmp(socio.plan, PLANES[2]) == 0) &&
                 cuota_al_dia_ALU(&socio.fecha_ultima_cuota, fecha_proceso))
             {
 
-                fwrite(&socio, sizeof(t_socio), 1, target);
-                exportados++;
+                // MEJORA Nº 3
+                // Validamos retorno de fwrite
+                if (fwrite(&socio, sizeof(t_socio), 1, target) == 1)
+                {
+                    exportados++;
+                }
             }
         }
     }
@@ -747,8 +846,12 @@ void abm_socio_ALU(t_indice *indice, const t_fecha *fecha_proceso)
     };
 
     // Se delega el formateo y la validacion de entrada a la funcion de la catedra
-    printf("\n");
     opc = opcion(OPCIONES_ABM, "Alta / Modificacion de socio", "Ingrese opcion: ");
+
+    while(opc != 'A' && opc != 'M' && opc != 'V')
+    {
+        opc = opcion(OPCIONES_ABM, "Alta / Modificacion de socio", "Opcion erronea. Ingrese nuevamente: ");
+    }
 
     if (opc == 'A')
     {
@@ -759,5 +862,5 @@ void abm_socio_ALU(t_indice *indice, const t_fecha *fecha_proceso)
         socio_modificacion_manual_ALU(indice, ARCH_SOCIOS_BIN, fecha_proceso);
     }
 
-    // Si es 'V' o invalida, retorna y el main se encarga de pausar y limpiar
+    // Si es 'V' retorna y el main se encarga de pausar y limpiar
 }

@@ -24,26 +24,31 @@ void salir_y_persistir_ALU(t_indice *ind_socios, t_indice *ind_titulos,
     char path_socios_backup[256], path_titulos_backup[256], path_matriz_backup[256];
 
     // Armamos los path de los archivos
-    sprintf(path_socios_backup, "archivos/socios_%04d%02d%02d.dat",
+    // MEJORA Nº 5
+    // Cambiamos las utas fijas con string literal "archivos/socios_..." y "archivos/titulos_..."
+    // Hacemos uso de las macros PREFIJO_SOCIOS_BKP y PREFIJO_TITULOS_BKP definidas en config.h
+    sprintf(path_socios_backup, PREFIJO_SOCIOS_BKP "%04d%02d%02d.dat",
             fecha_proceso->anio, fecha_proceso->mes, fecha_proceso->dia);
 
-    sprintf(path_titulos_backup, "archivos/titulos_%04d%02d%02d.dat",
+    sprintf(path_titulos_backup, PREFIJO_TITULOS_BKP "%04d%02d%02d.dat",
             fecha_proceso->anio, fecha_proceso->mes, fecha_proceso->dia);
 
     sprintf(path_matriz_backup, PREFIJO_MATRIZ "%04d%02d%02d.dat",
             fecha_proceso->anio, fecha_proceso->mes, fecha_proceso->dia);
 
     // Copiamos los archivos binarios
+    // MEJORA Nº 3
+    // Validamos el retorno de archivo_copiar antes de imprimir
     if(archivo_existe(ARCH_SOCIOS_BIN))
     {
-        archivo_copiar(ARCH_SOCIOS_BIN, path_socios_backup);
-        printf("%s -> %s\n", ARCH_SOCIOS_BIN, path_socios_backup);
+        if(archivo_copiar(ARCH_SOCIOS_BIN, path_socios_backup) == OK)
+            printf("%s -> %s\n", ARCH_SOCIOS_BIN, path_socios_backup);
     }
 
     if (archivo_existe(ARCH_TITULOS_BIN))
     {
-        archivo_copiar(ARCH_TITULOS_BIN, path_titulos_backup);
-        printf("%s -> %s\n", ARCH_TITULOS_BIN, path_titulos_backup);
+        if(archivo_copiar(ARCH_TITULOS_BIN, path_titulos_backup) == OK)
+            printf("%s -> %s\n", ARCH_TITULOS_BIN, path_titulos_backup);
     }
 
     // Volcamos la matriz de consumo a un archivo binario diario
